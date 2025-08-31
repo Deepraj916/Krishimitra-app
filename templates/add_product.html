@@ -2,37 +2,48 @@
 {% block title %}Add a New Product{% endblock %}
 
 {% block content %}
-<div class="form-container">
-    <h2>List a New Product for Sale</h2>
-    <form method="POST" action="{{ url_for('add_product') }}" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="name">Product Name</label>
-            <input type="text" id="name" name="name" required>
-        </div>
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-lg">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="card-title text-center mb-4">List a New Product for Sale</h2>
 
-        <div class="form-group">
-            <label for="category">Category</label>
-            <select id="category" name="category" required>
-                <option value="" disabled selected>-- Select a Category --</option>
-                <option value="Products">Products (Fertilizers, etc.)</option>
-                <option value="Tools">Tools</option>
-                <option value="Seeds">Seeds</option>
-                <option value="Others">Others</option>
-            </select>
+                <form method="POST" action="{{ url_for('add_product') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Product Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="" disabled selected>-- Select a Category --</option>
+                            <option value="Products">Products (Fertilizers, etc.)</option>
+                            <option value="Tools">Tools</option>
+                            <option value="Seeds">Seeds</option>
+                            <option value="Others">Others</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price (e.g., ₹1,200)</label>
+                        <input type="text" class="form-control" id="price" name="price" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Product Image</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 mt-3">Add Product</button>
+                </form>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="description">Description</label>
-            <textarea id="description" name="description" rows="4" required></textarea>
-        </div>
-        <div class="form-group">
-            <label for="price">Price (e.g., ₹1,200)</label>
-            <input type="text" id="price" name="price" required>
-        </div>
-        <div class="form-group">
-            <label for="image">Product Image</label>
-            <input type="file" id="image" name="image" accept="image/*" required>
-        </div>
-        <button type="submit">Add Product</button>
-    </form>
+    </div>
 </div>
 {% endblock %}
