@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}My Inbox{% endblock %}
+
+{% block body_class %}inbox-page-background{% endblock %}
+
+{% block content %}
+<div class="inbox-container">
+    <h1>My Inbox</h1>
+    <div class="conversation-list">
+        {% if conversations %}
+            {% for convo in conversations %}
+                <a href="{{ url_for('conversation', product_id=convo.product_id) }}" class="convo-item">
+                    <div class="convo-details">
+                        <p class="convo-product"><strong>Product:</strong> {{ convo.product_name }}</p>
+                        <p class="convo-participant">
+                            <strong>Chatting with:</strong> 
+                            {% if convo.other_participant %}
+                                {{ convo.other_participant.split('@')[0] }}
+                            {% else %}
+                                Unknown
+                            {% endif %}
+                        </p>
+                        <p class="convo-last-message">
+                            <em>{{ convo.messages[-1].text | truncate(80) }}</em>
+                        </p>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p>You have no messages.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

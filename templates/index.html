@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Welcome - Krishimitra{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Background Image -->
+<div class="hero-section text-center text-white">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1 class="display-4 fw-bold">Welcome to Krishimitra</h1>
+        <p class="lead">Your trusted partner in modern agriculture. All the tools and knowledge you need, in one place.</p>
+        <a href="{{ url_for('store') }}" class="btn btn-warning btn-lg mt-3">Explore the Store</a>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container my-5">
+    <h2 class="text-center mb-4">Our Features</h2>
+    <div class="row text-center">
+        <!-- Agro Store Card -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card shadow-sm h-100 feature-card">
+                <!-- ADD YOUR AGRO STORE IMAGE HERE -->
+                <img src="{{ url_for('static', filename='images/store.jpg') }}" class="card-img-top feature-image" alt="Agro Store">
+                <div class="card-body">
+                    <h5 class="card-title">Agro Store</h5>
+                    <p class="card-text">Buy and sell agricultural products, tools, and seeds from a trusted community.</p>
+                    <a href="{{ url_for('store') }}" class="btn btn-success">Visit Store</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disease Detection Card -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card shadow-sm h-100 feature-card">
+                <!-- ADD YOUR DISEASE DETECTION IMAGE HERE -->
+                <img src="{{ url_for('static', filename='images/detection.jpg') }}" class="card-img-top feature-image" alt="Disease Detection">
+                <div class="card-body">
+                    <h5 class="card-title">Disease Detection</h5>
+                    <p class="card-text">Upload a photo of a plant leaf and get an instant AI-powered diagnosis.</p>
+                    <a href="{{ url_for('disease_detection') }}" class="btn btn-success">Detect Disease</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Prices Card -->
+        <div class="col-lg-4 col-md-12 mb-4">
+            <div class="card shadow-sm h-100 feature-card">
+                <!-- ADD YOUR MARKET PRICES IMAGE HERE -->
+                <img src="{{ url_for('static', filename='images/prices.png') }}" class="card-img-top feature-image" alt="Market Prices">
+                <div class="card-body">
+                    <h5 class="card-title">Market Prices</h5>
+                    <p class="card-text">Get live, up-to-date market prices for agricultural commodities in your region.</p>
+                    <a href="{{ url_for('market_prices') }}" class="btn btn-success">Check Prices</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

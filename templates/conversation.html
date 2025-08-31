@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Conversation{% endblock %}
+
+{% block content %}
+<div class="convo-container">
+    <h2>Conversation about: {{ product.name }}</h2>
+    <p>You are talking to: <strong>{{ seller_email }}</strong></p>
+
+    <div class="message-history">
+        {% if conversation and conversation.messages %}
+            {% for message in conversation.messages %}
+                <div class="message {% if message.sender == session.user_email %}sent{% else %}received{% endif %}">
+                    <p><strong>{{ message.sender.split('@')[0] }}:</strong> {{ message.text }}</p>
+                    <span class="timestamp">{{ message.timestamp }}</span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No messages yet. Start the conversation!</p>
+        {% endif %}
+    </div>
+
+    <form method="POST" class="message-form">
+        <textarea name="message_text" placeholder="Type your message here..." required></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+</div>
+{% endblock %}

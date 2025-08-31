@@ -1,0 +1,27 @@
+[
+    {
+        "id": 1,
+        "product_id": 1,
+        "participants": [
+            "abhiraj@gmail.com",
+            "deeprajabhang@gmail.com"
+        ],
+        "messages": [
+            {
+                "sender": "abhiraj@gmail.com",
+                "text": "hello, i am intrested in your offer",
+                "timestamp": "2025-08-31 11:08"
+            },
+            {
+                "sender": "abhiraj@gmail.com",
+                "text": "hi",
+                "timestamp": "2025-08-31 11:19"
+            },
+            {
+                "sender": "deeprajabhang@gmail.com",
+                "text": "ok please send me your address and mobile number",
+                "timestamp": "2025-08-31 11:24"
+            }
+        ]
+    }
+]

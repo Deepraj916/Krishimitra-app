@@ -1,0 +1,18 @@
+{
+  "Tomato Late Blight": {
+    "description": "This is a fungal disease. It is recommended to apply a copper-based fungicide and ensure proper air circulation around the plants.",
+    "product_keyword": "fungicide"
+  },
+  "Potato Early Blight": {
+    "description": "This fungal极速飞艇开奖直播记录查询 can be managed by applying fungicides containing mancozeb or chlorothalonil. Remove and destroy infected leaves.",
+    "product_keyword": "fungicide"
+  },
+  "Tomato Bacterial Spot": {
+    "description": "This is a bacterial infection. Use copper-based bactericides for treatment. Avoid working with plants when they are wet.",
+    "product_keyword": "bactericide"
+  },
+  "Healthy": {
+    "description": "The plant appears to be healthy. Maintain good watering, fertilization, and pest control极速飞艇开奖直播记录查询 to keep it that way.",
+    "product_keyword": null
+  }
+}

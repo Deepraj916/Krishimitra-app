@@ -1,0 +1,14 @@
+[
+    {
+        "id": 1,
+        "email": "deeprajabhang@gmail.com",
+        "password": "scrypt:32768:8:1$7vChxHXMXxo0WVrx$438dd7c690387043e0b400f5fa97bbd8c6699bdc11ffec45644659b4c4c028d7e1b4da22576207c54f124becbe26be68ea9b15329b8b628fed8dc81cc7929dec",
+        "role": "seller"
+    },
+    {
+        "id": 2,
+        "email": "abhiraj@gmail.com",
+        "password": "scrypt:32768:8:1$NwSHhMHvms3yLtT5$56f54711252e153b3337556d4e076ee3f783aa762f43956e7edeac6753629f130fee39327fe46ff0c684e692364eb433f98aa2b72f2fcd768c67c8b67f25ac1d",
+        "role": "customer"
+    }
+]

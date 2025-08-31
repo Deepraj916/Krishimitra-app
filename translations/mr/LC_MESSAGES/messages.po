@@ -1,0 +1,298 @@
+# Marathi translations for Krishimitra.
+# Copyright (C) 2025
+# This file is distributed under the same license as the Krishimitra project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Krishimitra 1.0\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2025-08-30 17:34+0530\n"
+"PO-Revision-Date: 2025-08-30 17:34+0530\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: mr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: app.py:114
+msgid "An account with this email already exists."
+msgstr "या ईमेलने आधीच एक खाते अस्तित्वात आहे."
+
+#: app.py:118
+msgid "Passwords do not match."
+msgstr "पासवर्ड जुळत नाहीत."
+
+#: app.py:126
+msgid "Registration successful! Please log in."
+msgstr "नोंदणी यशस्वी झाली! कृपया लॉगिन करा."
+
+#: app.py:141
+msgid "Logged in successfully!"
+msgstr "यशस्वीरित्या लॉगिन केले!"
+
+#: app.py:144
+msgid "Invalid email or password. Please try again."
+msgstr "अवैध ईमेल किंवा पासवर्ड. कृपया पुन्हा प्रयत्न करा."
+
+#: app.py:151
+msgid "You have been logged out."
+msgstr "तुम्ही लॉग आउट झाला आहात."
+
+#: app.py:186
+msgid "You must be logged in to add a product."
+msgstr "उत्पादन जोडण्यासाठी तुम्हाला लॉगिन करणे आवश्यक आहे."
+
+#: app.py:191
+msgid "No image file part"
+msgstr "चित्र फाइलचा भाग नाही"
+
+#: app.py:195
+msgid "No selected image file"
+msgstr "कोणतीही चित्र फाइल निवडलेली नाही"
+
+#: app.py:213
+msgid "Your product has been listed!"
+msgstr "तुमचे उत्पादन सूचीबद्ध झाले आहे!"
+
+#: app.py:228
+msgid "You must be logged in to perform this action."
+msgstr "ही क्रिया करण्यासाठी तुम्हाला लॉगिन करणे आवश्यक आहे."
+
+#: app.py:234
+msgid "Product not found."
+msgstr "उत्पादन सापडले नाही."
+
+#: app.py:238
+msgid "You are not authorized to delete this product."
+msgstr "तुम्हाला हे उत्पादन हटवण्याची परवानगी नाही."
+
+#: app.py:253
+msgid "Product has been deleted successfully."
+msgstr "उत्पादन यशस्वीरित्या हटवले आहे."
+
+#: app.py:261 app.py:284
+msgid "No file part"
+msgstr "फाइलचा भाग नाही"
+
+#: app.py:265 app.py:288
+msgid "No selected file"
+msgstr "कोणतीही फाइल निवडलेली नाही"
+
+#: templates/add_product.html:3
+msgid "Add a New Product"
+msgstr "नवीन उत्पादन जोडा"
+
+#: templates/add_product.html:7
+msgid "List a New Product for Sale"
+msgstr "विक्रीसाठी नवीन उत्पादन सूचीबद्ध करा"
+
+#: templates/add_product.html:11
+msgid "Product Name"
+msgstr "उत्पादनाचे नाव"
+
+#: templates/add_product.html:16
+msgid "Category"
+msgstr "श्रेणी"
+
+#: templates/add_product.html:18
+msgid "-- Select a Category --"
+msgstr "-- एक श्रेणी निवडा --"
+
+#: templates/add_product.html:19
+msgid "Products (Fertilizers, etc.)"
+msgstr "उत्पादने (खते, इत्यादी)"
+
+#: templates/add_product.html:20
+msgid "Tools"
+msgstr "साधने"
+
+#: templates/add_product.html:21
+msgid "Seeds"
+msgstr "बियाणे"
+
+#: templates/add_product.html:22
+msgid "Others"
+msgstr "इतर"
+
+#: templates/add_product.html:28
+msgid "Description"
+msgstr "वर्णन"
+
+#: templates/add_product.html:32
+msgid "Price (e.g., ₹1,200)"
+msgstr "किंमत (उदा., ₹१,२००)"
+
+#: templates/add_product.html:36
+msgid "Product Image"
+msgstr "उत्पादनाचे चित्र"
+
+#: templates/add_product.html:39
+msgid "Add Product"
+msgstr "उत्पादन जोडा"
+
+#: templates/base.html:7
+msgid "Krishimitra"
+msgstr "कृषिमित्र"
+
+#: templates/base.html:15 templates/store.html:3 templates/store.html:5
+msgid "Agro Store"
+msgstr "ऍग्रो स्टोअर"
+
+#: templates/base.html:16 templates/disease_detection.html:3
+msgid "Disease Detection"
+msgstr "रोग निदान"
+
+#: templates/base.html:17 templates/market_prices.html:3
+msgid "Market Prices"
+msgstr "बाजार भाव"
+
+#: templates/base.html:20
+msgid "Logout"
+msgstr "लॉगआउट"
+
+#: templates/base.html:22 templates/login.html:17
+msgid "Login"
+msgstr "लॉगिन"
+
+#: templates/base.html:23 templates/register.html:17
+msgid "Register"
+msgstr "नोंदणी करा"
+
+#: templates/disease_detection.html:7
+msgid "Plant Disease Detection System"
+msgstr "वनस्पती रोग निदान प्रणाली"
+
+#: templates/disease_detection.html:8
+msgid "Upload a clear photo of an affected plant leaf to get a diagnosis."
+msgstr "निदान मिळविण्यासाठी प्रभावित वनस्पतीच्या पानाचा एक स्पष्ट फोटो अपलोड करा."
+
+#: templates/disease_detection.html:12
+msgid "Choose an Image"
+msgstr "एक चित्र निवडा"
+
+#: templates/disease_detection.html:14
+msgid "Detect Disease"
+msgstr "रोगाचे निदान करा"
+
+#: templates/disease_detection.html:20
+msgid "Uploaded Image"
+msgstr "अपलोड केलेले चित्र"
+
+#: templates/disease_detection.html:24
+msgid "Detection Result"
+msgstr "निदानाचा परिणाम"
+
+#: templates/disease_detection.html:28
+msgid "Suggested Remedy"
+msgstr "सुचवलेला उपाय"
+
+#: templates/disease_detection.html:32
+msgid "No specific remedy information found in our database for this condition."
+msgstr "या स्थितीसाठी आमच्या डेटाबेसमध्ये कोणताही विशिष्ट उपाय सापडला नाही."
+
+#: templates/disease_detection.html:38
+msgid "Suggested Products from Our Store"
+msgstr "आमच्या स्टोअरमधील सुचवलेली उत्पादने"
+
+#: templates/disease_detection.html:50
+msgid "Image Preview"
+msgstr "चित्राचे पूर्वावलोकन"
+
+#: templates/index.html:3
+msgid "Welcome - Krishimitra"
+msgstr "स्वागत - कृषिमित्र"
+
+#: templates/index.html:7
+msgid "Welcome to Krishimitra!"
+msgstr "कृषिमित्र मध्ये आपले स्वागत आहे!"
+
+#: templates/index.html:8
+msgid "Your one-stop solution for agricultural needs."
+msgstr "शेतीच्या गरजांसाठी तुमचे एक-थांबा समाधान."
+
+#: templates/index.html:9
+msgid "Use the navigation above to explore the store, detect plant diseases, or check current market prices."
+msgstr "स्टोअर एक्सप्लोर करण्यासाठी, वनस्पतींचे रोग ओळखण्यासाठी किंवा सध्याचे बाजार भाव तपासण्यासाठी वरील नेव्हिगेशनचा वापर करा."
+
+#: templates/login.html:3
+msgid "Login - Krishimitra"
+msgstr "लॉगिन - कृषिमित्र"
+
+#: templates/login.html:7
+msgid "Login to Your Account"
+msgstr "आपल्या खात्यात लॉगिन करा"
+
+#: templates/login.html:16 templates/register.html:16
+msgid "Email Address"
+msgstr "ईमेल ऍड्रेस"
+
+#: templates/login.html:20 templates/register.html:20
+msgid "Password"
+msgstr "पासवर्ड"
+
+#: templates/market_prices.html:5
+msgid "Current Market Prices in Maharashtra"
+msgstr "महाराष्ट्रातील सध्याचे बाजार भाव"
+
+#: templates/market_prices.html:6
+msgid "Latest data from various agricultural markets."
+msgstr "विविध कृषी बाजारांमधील नवीनतम डेटा."
+
+#: templates/market_prices.html:12
+msgid "Commodity"
+msgstr "माल"
+
+#: templates/market_prices.html:13
+msgid "Market"
+msgstr "बाजार"
+
+#: templates/market_prices.html:14
+msgid "Modal Price"
+msgstr "सर्वसाधारण किंमत"
+
+#: templates/market_prices.html:23
+msgid "Could not fetch price data at this time."
+msgstr "यावेळी किमतीचा डेटा मिळू शकला नाही."
+
+#: templates/register.html:3
+msgid "Register - Krishimitra"
+msgstr "नोंदणी - कृषिमित्र"
+
+#: templates/register.html:7
+msgid "Create an Account"
+msgstr "एक खाते तयार करा"
+
+#: templates/register.html:24
+msgid "Confirm Password"
+msgstr "पासवर्डची पुष्टी करा"
+
+#: templates/store.html:8
+msgid "Search for products..."
+msgstr "उत्पादने शोधा..."
+
+#: templates/store.html:16
+msgid "List a New Product +"
+msgstr "नवीन उत्पादन सूचीबद्ध करा +"
+
+#: templates/store.html:20
+msgid "Showing results for: \"%(search_query)s\""
+msgstr "\"%(search_query)s\" साठी परिणाम दाखवत आहे"
+
+#: templates/store.html:43
+msgid "Seller: %(seller)s"
+msgstr "विक्रेता: %(seller)s"
+
+#: templates/store.html:46
+msgid "Contact Seller"
+msgstr "विक्रेत्याशी संपर्क साधा"
+
+#: templates/store.html:48
+msgid "Delete"
+msgstr "हटवा"
+
+#: templates/store.html:56
+msgid "No products found. Try a different category or search term."
+msgstr "कोणतेही उत्पादन सापडले नाही. वेगळी श्रेणी किंवा शोध संज्ञा वापरून पहा."

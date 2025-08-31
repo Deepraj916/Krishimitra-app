@@ -1,0 +1,366 @@
+/* static/css/style.css */
+
+body {
+    background-color: #f8f9fa; /* A light grey from Bootstrap's palette */
+}
+
+/* Make the navbar brand slightly bolder */
+.navbar-brand {
+    font-weight: 600;
+}
+
+/* Styling for the category navigation links */
+.category-nav {
+    text-align: center;
+    margin: 2rem 0;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 1rem;
+}
+
+.category-nav a {
+    text-decoration: none;
+    color: #333;
+    padding: 8px 16px;
+    margin: 0 5px;
+    border-radius: 20px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.category-nav a:hover {
+    background-color: #e9ecef;
+}
+
+.category-nav a.active {
+    background-color: #2c5e3f;
+    color: white;
+}
+
+/* Hero Section Styling */
+.hero-section {
+    position: relative;
+    padding: 10rem 1rem;
+    /* ADD YOUR BACKGROUND IMAGE HERE */
+    background: url('../images/hero-bg.jpg') no-repeat center center;
+    background-size: cover;
+    border-radius: 0.5rem;
+    overflow: hidden; /* Ensures the overlay fits perfectly */
+}
+
+/* Dark overlay to make text readable */
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+}
+
+/* Position hero content above the overlay */
+.hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Feature Card Styling */
+.feature-card {
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.feature-image {
+    width: 100%;
+    height: 250px; /* This creates the square format */
+    object-fit: cover; /* This prevents the image from stretching */
+}
+
+/* Styling for Login/Register Page Background */
+.auth-page-wrapper {
+    /* Set the position to cover the entire viewport, under the navbar */
+    position: fixed;
+    top: 56px; /* Height of the navbar */
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 56px); /* Full height minus navbar */
+
+    /* Center the content (the login card) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem; /* Add padding to prevent card from touching edges */
+
+    /* ADD YOUR BACKGROUND IMAGE HERE */
+    /* background: url('../images/login-bg.jpg') no-repeat center center; */ /* Temporarily disabled */
+    background-color: #f8f9fa; /* Added a light grey background for the test */
+    background-size: cover;
+}
+
+/* Override Bootstrap's container padding for this specific page */
+.container.mt-4 {
+    padding: 0;
+    max-width: 100%;
+}
+
+/* Improve login card appearance */
+.auth-page-wrapper .card {
+    background-color: rgba(255, 255, 255, 0.95); /* Semi-transparent white background */
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Enhanced form styling for login page */
+.auth-page-wrapper .form-label {
+    font-weight: 600;
+    color: #2c5e3f;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-page-wrapper .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.auth-page-wrapper .form-control:focus {
+    border-color: #2c5e3f;
+    box-shadow: 0 0 0 0.2rem rgba(44, 94, 63, 0.25);
+    background-color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.auth-page-wrapper .form-control:hover {
+    border-color: #3d7c4f;
+}
+
+.auth-page-wrapper .btn-success {
+    background: linear-gradient(135deg, #2c5e3f 0%, #3d7c4f 100%);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 0.25rem 0.5rem rgba(44, 94, 63, 0.3);
+}
+
+.auth-page-wrapper .btn-success:hover {
+    background: linear-gradient(135deg, #3d7c4f 0%, #2c5e3f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(44, 94, 63, 0.4);
+}
+
+.auth-page-wrapper .btn-success:active {
+    transform: translateY(0);
+    box-shadow: 0 0.25rem 0.5rem rgba(44, 94, 63, 0.3);
+}
+
+/* Custom Login Page Styling */
+.login-page-background {
+    /* Set the background image and make it cover the whole page */
+    background: url('../images/login-bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* This container centers the login card */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh; /* Adjust height as needed */
+}
+
+/* --- Faint Green Smokey Glow Effect for Login/Register Cards --- */
+
+/* Prepare the card for a smooth transition */
+.login-card {
+    width: 100%;
+    max-width: 420px; /* Set a proper width for the form */
+    background: white;
+    padding: 2.5rem;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(34, 187, 13, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* When the user hovers over the card... */
+.login-card:hover {
+    /* "Pop up" the card slightly */
+    transform: translateY(-5px);
+    /* Play the glowing animation */
+    animation: faintGreenGlow 2s ease-in-out infinite;
+}
+
+/* This animation creates the pulsing "smokey" green shadow */
+@keyframes faintGreenGlow {
+    0% {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    50% {
+        /* The glow is strongest mid-animation, using a faint green color */
+        box-shadow: 0 10px 40px rgba(44, 94, 63, 0.7);
+    }
+    100% {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* --- Styling for Inbox and Conversation Pages --- */
+
+/* Inbox Page */
+.inbox-container {
+    max-width: 900px;
+    margin: 2rem auto;
+}
+.conversation-list {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1rem;
+}
+.convo-item {
+    display: block;
+    padding: 1.5rem;
+    border-bottom: 1px solid #eee;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.2s ease;
+}
+.convo-item:last-child {
+    border-bottom: none;
+}
+.convo-item:hover {
+    background-color: #f9f9f9;
+}
+.convo-item p {
+    margin: 0.25rem 0;
+}
+.convo-product strong {
+    color: #2c5e3f;
+}
+.convo-last-message {
+    color: #777;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Conversation Chat Page */
+.convo-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 2rem;
+}
+.message-history {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1rem;
+    height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+.message {
+    padding: 10px 15px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    max-width: 70%;
+}
+.message p {
+    margin: 0;
+}
+.message .timestamp {
+    font-size: 0.75rem;
+    color: #888;
+    display: block;
+    margin-top: 5px;
+}
+.message.sent {
+    background-color: #2c5e3f;
+    color: white;
+    align-self: flex-end;
+    text-align: right;
+}
+.message.sent .timestamp {
+    color: #e0e0e0;
+}
+.message.received {
+    background-color: #f1f1f1;
+    color: #333;
+    align-self: flex-start;
+}
+.message-form textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    box-sizing: border-box;
+    font-size: 1rem;
+    height: 80px;
+    margin-bottom: 10px;
+}
+.message-form button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background-color: #ff9800;
+    color: white;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* static/css/style.css - ADD THIS AT THE END */
+
+/* Styling for Inbox Page Background */
+.inbox-page-background {
+    background: url('../images/inbox-bg.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* --- Styling for Agro Store Banner --- */
+.store-banner {
+    position: relative;
+    padding: 4rem 2rem;
+    margin-bottom: 2rem;
+    color: white;
+    background: url('../images/store-banner.jpg') no-repeat center center;
+    background-size: cover;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.store-banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4); /* Semi-transparent black overlay */
+}
+
+.store-banner-content {
+    position: relative; /* Places content on top of the overlay */
+    z-index: 1;
+    text-align: center;
+}
+
+/* static/css/style.css - ADD THIS AT THE END */
+
+/* Styling for Disease Detection Page Background */
+.detection-page-background {
+    background: url('../images/detection-bg.jpeg') no-repeat center center fixed;
+    background-size: cover;
+}

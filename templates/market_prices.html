@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Market Prices{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h1 class="display-6 fw-bold">Current Market Prices in Maharashtra</h1>
+    <p class="lead text-muted">Latest data from various agricultural markets.</p>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-success">
+                    <tr>
+                        <th scope="col">Commodity</th>
+                        <th scope="col">Market</th>
+                        <th scope="col">Modal Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in prices %}
+                    <tr>
+                        <td>{{ item.commodity }}</td>
+                        <td>{{ item.market }}</td>
+                        <td>{{ item.price }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center">Could not fetch price data at this time.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

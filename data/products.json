@@ -1,0 +1,11 @@
+[
+    {
+        "id": 1,
+        "name": "Deepraj yogeshwar Abhang",
+        "category": "Tools",
+        "description": "Rotavator for ploghing",
+        "price": "15000",
+        "image": "rotavator.jpg",
+        "seller": "deeprajabhang@gmail.com"
+    }
+]
