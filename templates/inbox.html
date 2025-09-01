@@ -9,7 +9,7 @@
     <div class="conversation-list">
         {% if conversations %}
             {% for convo in conversations %}
-                <a href="{{ url_for('conversation', product_id=convo.product_id) }}" class="convo-item">
+                <a href="{{ url_for('conversation_chat', convo_id=convo.id) }}" class="convo-item">
                     <div class="convo-details">
                         <p class="convo-product"><strong>Product:</strong> {{ convo.product_name }}</p>
                         <p class="convo-participant">

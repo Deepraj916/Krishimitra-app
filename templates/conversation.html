@@ -19,7 +19,7 @@
         {% endif %}
     </div>
 
-    <form method="POST" class="message-form">
+    <form method="POST" action="{{ url_for('conversation_chat', convo_id=conversation.id) }}" class="message-form">
         <textarea name="message_text" placeholder="Type your message here..." required></textarea>
         <button type="submit">Send Message</button>
     </form>

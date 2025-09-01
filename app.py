@@ -11,11 +11,8 @@ from email_utils import send_otp_email
 
 # --- Local Module Imports ---
 from ml_model.predictor import predict_disease
-import os
-
-# --- Local Module Imports ---
-from ml_model.predictor import predict_disease
 from scripts.price_scraper import get_market_prices
+import os
 
 # --- Initial Setup ---
 load_dotenv()
@@ -208,8 +205,6 @@ def delete_product(product_id):
     flash('Product has been deleted successfully.', 'success')
     return redirect(url_for('store'))
 
-# app.py
-
 @app.route('/detect', methods=['GET', 'POST'])
 def disease_detection():
     if request.method == 'POST':
@@ -223,100 +218,34 @@ def disease_detection():
             leaf_upload_path = os.path.join('static/leaf_uploads', filename)
             file.save(leaf_upload_path)
             
-            # --- THIS IS THE UPDATED PART ---
-            # 1. Get the structured data (a dictionary) from the AI
             prediction_data = predict_disease(leaf_upload_path)
-            
-            # 2. Extract the information from the dictionary
-            prediction_result = prediction_data.get('disease_name')
-            remedy_info = prediction_data # The whole dictionary now serves as our remedy info
             keyword = prediction_data.get('product_keyword')
-
-            # 3. Find suggested products and generate links (if a keyword was provided)
+            
             suggested_products = []
             amazon_link = None
             flipkart_link = None
             
             if keyword:
                 all_products = load_data(PRODUCTS_DATA_FILE)
-                suggested_products = [
-                    p for p in all_products 
-                    if keyword.lower() in p['name'].lower() or keyword.lower() in p['description'].lower()
-                ]
+                suggested_products = [p for p in all_products if keyword.lower() in p['name'].lower() or keyword.lower() in p['description'].lower()]
                 url_safe_keyword = quote_plus(keyword)
                 amazon_link = f"https://www.amazon.in/s?k={url_safe_keyword}"
                 flipkart_link = f"https://www.flipkart.com/search?q={url_safe_keyword}"
 
             return render_template(
                 'disease_detection.html', 
-                prediction=prediction_result, 
+                prediction_data=prediction_data,  # Pass the entire dictionary
                 uploaded_image=filename, 
-                remedy=remedy_info, 
                 products=suggested_products,
                 amazon_link=amazon_link,
                 flipkart_link=flipkart_link
             )
 
-    return render_template('disease_detection.html', prediction=None)
+    return render_template('disease_detection.html', prediction_data=None)
 @app.route('/prices')
 def market_prices():
     price_data = get_market_prices()
     return render_template('market_prices.html', prices=price_data)
-
-# Add this entire function to the bottom of app.py
-
-@app.route('/conversation/<int:product_id>', methods=['GET', 'POST'])
-def conversation(product_id):
-    if 'user_email' not in session:
-        flash('You must be logged in to contact a seller.', 'error')
-        return redirect(url_for('login'))
-
-    products = load_data(PRODUCTS_DATA_FILE)
-    product = next((p for p in products if p.get('id') == product_id), None)
-
-    if not product:
-        flash('Product not found.', 'error')
-        return redirect(url_for('store'))
-
-    conversations = load_data(MESSAGES_DATA_FILE)
-
-    # Find if a conversation already exists between these two users for this product
-    convo = next((c for c in conversations if c['product_id'] == product_id and session['user_email'] in c['participants']), None)
-
-    # A user cannot start a conversation with themselves
-    if not convo and product['seller'] == session['user_email']:
-        flash('You cannot contact yourself.', 'error')
-        return redirect(url_for('store'))
-
-    if request.method == 'POST':
-        message_text = request.form.get('message_text')
-        if not message_text:
-            flash('Message cannot be empty.', 'error')
-            return redirect(url_for('conversation', product_id=product_id))
-
-        new_message = {
-            'sender': session['user_email'],
-            'text': message_text,
-            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M")
-        }
-
-        if convo:
-            # Add message to existing conversation
-            convo['messages'].append(new_message)
-        else:
-            # Create a new conversation
-            convo = {
-                'id': len(conversations) + 1,
-                'product_id': product_id,
-                'participants': [session['user_email'], product['seller']],
-                'messages': [new_message]
-            }
-            conversations.append(convo)
-
-        save_data(conversations, MESSAGES_DATA_FILE)
-        return redirect(url_for('conversation', product_id=product_id))
-
-    return render_template('conversation.html', product=product, seller_email=product['seller'], conversation=convo)
 
 @app.route('/inbox')
 def inbox():
@@ -327,20 +256,16 @@ def inbox():
     all_conversations = load_data(MESSAGES_DATA_FILE)
     all_products = load_data(PRODUCTS_DATA_FILE)
     
-    # Find all conversations where the current user is a participant
-    user_conversations = [
-        c for c in all_conversations if session['user_email'] in c.get('participants', [])
-    ]
+    user_conversations = [c for c in all_conversations if session['user_email'] in c.get('participants', [])]
     
-    # Add product name and other participant's email to each conversation for display
     for convo in user_conversations:
-        # Find the product associated with this conversation
         product = next((p for p in all_products if p.get('id') == convo.get('product_id')), None)
         convo['product_name'] = product['name'] if product else "Unknown Product"
-        
-        # Find the other person in the chat
         other_participant = next((p for p in convo['participants'] if p != session['user_email']), None)
         convo['other_participant'] = other_participant
+    
+    # Sort conversations to show the most recent ones first
+    user_conversations.sort(key=lambda c: c['messages'][-1]['timestamp'] if c['messages'] else '0', reverse=True)
 
     return render_template('inbox.html', conversations=user_conversations)
 

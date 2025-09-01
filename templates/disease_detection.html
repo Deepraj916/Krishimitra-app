@@ -14,66 +14,82 @@
                         <p class="lead text-muted mb-4">Upload a clear photo of an affected plant leaf to get a diagnosis.</p>
                     </div>
 
-                    <form method="POST" action="{{ url_for('disease_detection') }}" enctype="multipart/form-data" class="text-center border-bottom pb-4">
+                    <form method="POST" action="{{ url_for('disease_detection') }}" enctype="multipart/form-data" class="text-center border-bottom pb-4 mb-4">
                         <label for="leaf_image" class="btn btn-success btn-lg me-2">Choose an Image</label>
                         <input type="file" id="leaf_image" name="leaf_image" accept="image/*" required onchange="previewImage(event)" class="d-none">
                         <button type="submit" class="btn btn-warning btn-lg">Detect Disease</button>
                     </form>
 
-                    {% if prediction %}
-                        <div class="mt-4">
-                            <div class="row">
-                                <div class="col-md-5 text-center">
-                                    <h3>Uploaded Image</h3>
-                                    <img src="{{ url_for('static', filename='leaf_uploads/' + uploaded_image) }}" alt="Uploaded Leaf Image" class="img-fluid rounded shadow-sm">
-                                </div>
-                                <div class="col-md-7">
-                                    <h3>Detection Result</h3>
-                                    <h4 class="text-success">{{ prediction }}</h4>
-
-                                    {% if remedy and remedy.description %}
-                                        <h5>Suggested Remedy</h5>
-                                        <p>{{ remedy.description }}</p>
-                                    {% endif %}
-
-                                    {% if amazon_link and flipkart_link %}
-                                        <div class="external-links mt-3">
-                                            <p>Purchase remedy online:</p>
-                                            <a href="{{ amazon_link }}" target="_blank" class="amazon-btn">Search on Amazon</a>
-                                            <a href="{{ flipkart_link }}" target="_blank" class="flipkart-btn">Search on Flipkart</a>
-                                        </div>
-                                    {% endif %}
-                                </div>
+                    <!-- START: New and Improved Results Section -->
+                    {% if prediction_data %}
+                        <div class="row">
+                            <!-- Left Column: Image -->
+                            <div class="col-md-5 text-center">
+                                <h3>Uploaded Image</h3>
+                                <img src="{{ url_for('static', filename='leaf_uploads/' + uploaded_image) }}" alt="Uploaded Leaf Image" class="img-fluid rounded shadow-sm mb-3">
                             </div>
 
-                            {% if products %}
-                            <div class="suggested-products mt-5">
-                                <h3 class="text-center">Suggested Products from Our Store</h3>
-                                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-1">
-                                    {% for product in products %}
-                                        <div class="col">
-                                            <div class="card h-100 shadow-sm">
-                                                <img src="{{ url_for('static', filename='product_uploads/' + product.image) }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
-                                                <div class="card-body d-flex flex-column">
-                                                    <h5 class="card-title">{{ product.name }}</h5>
-                                                    <p class="card-text"><small class="text-muted">{{ product.category }}</small></p>
-                                                    <div class="mt-auto">
-                                                        <a href="{{ url_for('conversation', product_id=product.id) }}" class="btn btn-primary btn-sm">Contact Seller</a>
-                                                    </div>
+                            <!-- Right Column: Diagnosis Details -->
+                            <div class="col-md-7">
+                                <h3>AI Diagnosis</h3>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Plant Identified:
+                                        <span class="badge bg-primary rounded-pill fs-6">{{ prediction_data.plant_name }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Condition:
+                                        {% if prediction_data.disease_name == 'Healthy' %}
+                                            <span class="badge bg-success rounded-pill fs-6">{{ prediction_data.disease_name }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger rounded-pill fs-6">{{ prediction_data.disease_name }}</span>
+                                        {% endif %}
+                                    </li>
+                                </ul>
+
+                                <h5 class="mt-4">Suggested Remedy</h5>
+                                <p>{{ prediction_data.remedy_description }}</p>
+
+                                {% if prediction_data.product_keyword %}
+                                    <div class="external-links mt-3">
+                                        <p>Purchase remedy online:</p>
+                                        <a href="{{ amazon_link }}" target="_blank" class="amazon-btn">Search on Amazon</a>
+                                        <a href="{{ flipkart_link }}" target="_blank" class="flipkart-btn">Search on Flipkart</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Suggested Products from Our Store -->
+                        {% if products %}
+                        <div class="suggested-products mt-5">
+                            <h3 class="text-center">Available Remedies in Our Store</h3>
+                            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-1">
+                                {% for product in products %}
+                                    <div class="col">
+                                        <div class="card h-100 shadow-sm">
+                                            <img src="{{ url_for('static', filename='product_uploads/' + product.image) }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                                            <div class="card-body d-flex flex-column">
+                                                <h5 class="card-title">{{ product.name }}</h5>
+                                                <p class="card-text"><small class="text-muted">{{ product.category }}</small></p>
+                                                <div class="mt-auto">
+                                                    <a href="{{ url_for('conversation', product_id=product.id) }}" class="btn btn-primary btn-sm">Contact Seller</a>
                                                 </div>
                                             </div>
                                         </div>
-                                    {% endfor %}
-                                </div>
+                                    </div>
+                                {% endfor %}
                             </div>
-                            {% endif %}
                         </div>
+                        {% endif %}
                     {% else %}
+                        <!-- Image Preview Section -->
                         <div class="text-center mt-4" id="imagePreviewContainer" style="display:none;">
                             <h3>Image Preview</h3>
                             <img id="imagePreview" src="#" alt="Image Preview" class="img-fluid rounded shadow-sm" style="max-height: 300px;"/>
                         </div>
                     {% endif %}
+                    <!-- END: Results Section -->
                 </div>
             </div>
         </div>

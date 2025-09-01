@@ -1,6 +1,10 @@
-# TODO: Add Mobile Number to Registration and Login
+# TODO: Update Conversation Messaging System
 
-- [x] Update templates/register.html: Add mobile number input field after the email field with 10-digit validation.
-- [x] Update app.py /register route: Retrieve mobile from form, check uniqueness, save to user data.
-- [x] Update templates/login.html: Change email field label to "Email or Mobile Number" and input type to "text".
-- [x] Update app.py /login route: Use single identifier to find user by email or mobile.
+## Steps to Complete
+
+- [x] Edit templates/store.html: Update "Contact Seller" link to use 'conversation_start' route
+- [x] Edit templates/inbox.html: Update conversation links to use 'conversation_chat' with convo_id
+- [x] Edit templates/conversation.html: Update form action to use 'conversation_chat' with convo_id (already correct)
+- [x] Edit app.py: Add new routes (conversation_start, conversation_chat already present)
+- [x] Edit app.py: Add /inbox route to sort conversations by latest message timestamp
+- [ ] Test the updated conversation flow to ensure no regressions

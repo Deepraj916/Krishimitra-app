@@ -48,7 +48,7 @@
                 <h6 class="card-subtitle mb-2 text-success">{{ product.price }}</h6>
                 <p class="card-text"><small class="text-muted">Seller: {{ product.seller }}</small></p>
                 <div class="mt-auto d-flex justify-content-between align-items-center">
-                    <a href="{{ url_for('conversation', product_id=product.id) }}" class="btn btn-primary btn-sm">Contact Seller</a>
+                    <a href="{{ url_for('conversation_start', product_id=product.id) }}" class="btn btn-primary btn-sm">Contact Seller</a>
                     {% if session.get('role') == 'seller' and session.get('user_email') == product.seller %}
                         <form action="{{ url_for('delete_product', product_id=product.id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
                             <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
