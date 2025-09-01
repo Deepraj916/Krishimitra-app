@@ -20,7 +20,7 @@
 
         <form method="POST" action="{{ url_for('login') }}">
             <div class="mb-3">
-                <label for="email" class="form-label">Email Address</label>
+                <label for="email" class="form-label">Email</label>
                 <input type="email" class="form-control" id="email" name="email" required>
             </div>
             <div class="mb-3">
@@ -28,9 +28,11 @@
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
             <button type="submit" class="btn btn-success w-100 mt-3">Login</button>
-            
+
             <div class="text-center mt-3">
-                <small class="text-muted">New user? <a href="{{ url_for('register') }}">Please Register</a></small>
+                <small class="text-muted">
+                    <a href="{{ url_for('forgot_password') }}">Forgot Password?</a> | New user? <a href="{{ url_for('register') }}">Please Register</a>
+                </small>
             </div>
             </form>
     </div>

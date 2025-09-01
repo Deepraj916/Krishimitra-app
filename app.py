@@ -6,6 +6,11 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from functools import wraps
 import json
+import random
+from email_utils import send_otp_email
+
+# --- Local Module Imports ---
+from ml_model.predictor import predict_disease
 import os
 
 # --- Local Module Imports ---
@@ -91,7 +96,7 @@ def login():
             flash('Logged in successfully!', 'success')
             return redirect(url_for('store'))
         else:
-            flash('Invalid email or password. Please try again.', 'error')
+            flash('Invalid credentials. Please try again.', 'error')
             return redirect(url_for('login'))
     return render_template('login.html')
 
@@ -316,6 +321,68 @@ def inbox():
         convo['other_participant'] = other_participant
 
     return render_template('inbox.html', conversations=user_conversations)
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        users = load_data(USERS_DATA_FILE)
+        user = next((u for u in users if u['email'] == email), None)
+
+        if user:
+            otp = str(random.randint(100000, 999999))
+            session['reset_otp'] = otp
+            session['reset_user'] = user['email']
+
+            email_sent = send_otp_email(user['email'], otp)
+
+            if email_sent:
+                flash(f"An OTP has been sent to {user['email']}", 'info')
+                return redirect(url_for('verify_otp'))
+            else:
+                flash('Could not send OTP email. Please try again later.', 'error')
+        else:
+            flash('This email address is not registered.', 'error')
+    return render_template('forgot_password.html')
+
+@app.route('/verify_otp', methods=['GET', 'POST'])
+def verify_otp():
+    if 'reset_otp' not in session or 'reset_user' not in session:
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        user_otp = request.form.get('otp')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if user_otp != session.get('reset_otp'):
+            flash('Invalid OTP. Please try again.', 'error')
+            return redirect(url_for('verify_otp'))
+            
+        if new_password != confirm_password:
+            flash('New passwords do not match.', 'error')
+            return redirect(url_for('verify_otp'))
+
+        # If OTP is correct, proceed to update the password
+        users = load_data(USERS_DATA_FILE)
+        user_to_update = next((u for u in users if u['email'] == session['reset_user']), None)
+        
+        if user_to_update:
+            # Securely hash the new password before saving
+            user_to_update['password'] = generate_password_hash(new_password)
+            save_data(users, USERS_DATA_FILE)
+            
+            # Clean up the session
+            session.pop('reset_otp', None)
+            session.pop('reset_user', None)
+            
+            flash('Your password has been reset successfully! Please log in.', 'success')
+            return redirect(url_for('login'))
+        else:
+            flash('An unexpected error occurred. User not found.', 'error')
+            return redirect(url_for('forgot_password'))
+
+    return render_template('verify_otp.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

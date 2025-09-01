@@ -2,7 +2,7 @@
     {
         "id": 1,
         "email": "deeprajabhang@gmail.com",
-        "password": "scrypt:32768:8:1$7vChxHXMXxo0WVrx$438dd7c690387043e0b400f5fa97bbd8c6699bdc11ffec45644659b4c4c028d7e1b4da22576207c54f124becbe26be68ea9b15329b8b628fed8dc81cc7929dec",
+        "password": "scrypt:32768:8:1$NcfRRVo1Jd7qyS66$917c96ec31ccc2be2a5d31f07111906e1da36020a817508f04e92cdcd8ef7903b0058752039e14be5598bbad4c4010950efb0dda8e19b3b04912964785489c7b",
         "role": "seller"
     },
     {
@@ -10,5 +10,19 @@
         "email": "abhiraj@gmail.com",
         "password": "scrypt:32768:8:1$NwSHhMHvms3yLtT5$56f54711252e153b3337556d4e076ee3f783aa762f43956e7edeac6753629f130fee39327fe46ff0c684e692364eb433f98aa2b72f2fcd768c67c8b67f25ac1d",
         "role": "customer"
+    },
+    {
+        "id": 3,
+        "email": "nilkokane@gmail.com",
+        "mobile": "7588643050",
+        "password": "scrypt:32768:8:1$syIFEryaErBWY9KF$a55d729041854ff153c762b30c79a1c61bbeeb4f051a57da93ffeb1eab201444f1c459ee59efe081de6d52fe0feb8c4524c3d27a9a28981acbf8ab432aa1c233",
+        "role": "seller"
+    },
+    {
+        "id": 4,
+        "email": "Deeprajabhang@gmail.com",
+        "mobile": "9503516340",
+        "password": "scrypt:32768:8:1$DZH7Gc1SYKaxRQzJ$b800224d4f8b13a32b2fabc2b25e40006b6252aa9c410e9be630eeb8a7c9f48861e4e87d76edb78da9a5ea95b3dde73c59b3159a2bc410d33b6b65017aa4d4f0",
+        "role": "seller"
     }
 ]
