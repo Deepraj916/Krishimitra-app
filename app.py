@@ -112,15 +112,37 @@ def store():
     search_query = request.args.get('search', '').lower()
     category_filter = request.args.get('category', None)
     all_products = load_data(PRODUCTS_DATA_FILE)
+
+    # Filter by category first
     if category_filter:
         products_in_category = [p for p in all_products if p.get('category') == category_filter]
     else:
         products_in_category = all_products
+
+    # Then, filter by search query
     if search_query:
         final_products = [p for p in products_in_category if search_query in p['name'].lower() or search_query in p['description'].lower()]
     else:
         final_products = products_in_category
-    return render_template('store.html', products=final_products, search_query=request.args.get('search', ''), active_category=category_filter)
+
+    # --- NEW LOGIC ---
+    # If the search returned no results, generate external links
+    amazon_link = None
+    flipkart_link = None
+    if not final_products and search_query:
+        url_safe_keyword = quote_plus(search_query)
+        amazon_link = f"https://www.amazon.in/s?k={url_safe_keyword}"
+        flipkart_link = f"https://www.flipkart.com/search?q={url_safe_keyword}"
+    # -----------------
+
+    return render_template(
+        'store.html', 
+        products=final_products, 
+        search_query=request.args.get('search', ''),
+        active_category=category_filter,
+        amazon_link=amazon_link,      # Pass the new links
+        flipkart_link=flipkart_link   # Pass the new links
+    )
 
 @app.route('/add_product', methods=['GET', 'POST'])
 @seller_required

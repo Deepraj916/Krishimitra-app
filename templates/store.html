@@ -59,9 +59,21 @@
         </div>
     </div>
     {% else %}
-        <div class="col-12">
-            <p class="text-center">No products found. Try a different category or search term.</p>
+        <!-- START: New 'Not Found' block -->
+        <div class="col-12 text-center">
+            <div class="not-found-container p-5">
+                <h4>No products found in our store for "{{ search_query }}".</h4>
+
+                {% if amazon_link and flipkart_link %}
+                    <p class="text-muted mt-3">You can try searching for this item on other platforms:</p>
+                    <div class="external-links mt-3">
+                        <a href="{{ amazon_link }}" target="_blank" class="amazon-btn">Search on Amazon</a>
+                        <a href="{{ flipkart_link }}" target="_blank" class="flipkart-btn">Search on Flipkart</a>
+                    </div>
+                {% endif %}
+            </div>
         </div>
+        <!-- END: New 'Not Found' block -->
     {% endfor %}
 </div>
 {% endblock %}

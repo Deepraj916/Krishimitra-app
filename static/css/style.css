@@ -364,3 +364,39 @@ body {
     background: url('../images/detection-bg.jpeg') no-repeat center center fixed;
     background-size: cover;
 }
+
+/* Styling for 'Not Found' Links in Store */
+.not-found-container {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+}
+
+/* Re-using button styles from disease detection page */
+.external-links {
+    margin-top: 1.5rem;
+}
+.external-links p {
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #555;
+}
+.external-links a {
+    display: inline-block;
+    padding: 10px 15px;
+    border-radius: 5px;
+    color: white;
+    text-decoration: none;
+    margin-right: 10px;
+    font-size: 0.9rem;
+    transition: transform 0.2s ease;
+}
+.external-links a:hover {
+    transform: translateY(-2px);
+}
+.amazon-btn {
+    background-color: #FF9900; /* Amazon Orange */
+}
+.flipkart-btn {
+    background-color: #2874F0; /* Flipkart Blue */
+}
