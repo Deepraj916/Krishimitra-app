@@ -23,5 +23,20 @@
                 "timestamp": "2025-08-31 11:24"
             }
         ]
+    },
+    {
+        "id": 2,
+        "product_id": 1,
+        "participants": [
+            "nilkokane@gmail.com",
+            "deeprajabhang@gmail.com"
+        ],
+        "messages": [
+            {
+                "sender": "nilkokane@gmail.com",
+                "text": "i am intrested in your offer",
+                "timestamp": "2025-09-01 19:43"
+            }
+        ]
     }
 ]

@@ -247,6 +247,80 @@ def market_prices():
     price_data = get_market_prices()
     return render_template('market_prices.html', prices=price_data)
 
+@app.route('/conversation/start/<int:product_id>')
+def conversation_start(product_id):
+    """
+    Finds an existing conversation or creates a new one, then redirects to the chat.
+    """
+    if 'user_email' not in session:
+        flash('You must be logged in to start a conversation.', 'error')
+        return redirect(url_for('login'))
+
+    products = load_data(PRODUCTS_DATA_FILE)
+    product = next((p for p in products if p.get('id') == product_id), None)
+
+    if not product:
+        flash('Product not found.', 'error')
+        return redirect(url_for('store'))
+
+    seller_email = product['seller']
+    buyer_email = session['user_email']
+
+    if seller_email == buyer_email:
+        flash('You cannot start a conversation with yourself.', 'error')
+        return redirect(url_for('store'))
+
+    conversations = load_data(MESSAGES_DATA_FILE)
+
+    existing_convo = next((c for c in conversations if c['product_id'] == product_id and seller_email in c['participants'] and buyer_email in c['participants']), None)
+
+    if existing_convo:
+        return redirect(url_for('conversation_chat', convo_id=existing_convo['id']))
+    else:
+        new_convo = {
+            'id': len(conversations) + 1,
+            'product_id': product_id,
+            'participants': [buyer_email, seller_email],
+            'messages': []
+        }
+        conversations.append(new_convo)
+        save_data(conversations, MESSAGES_DATA_FILE)
+        return redirect(url_for('conversation_chat', convo_id=new_convo['id']))
+
+@app.route('/conversation/chat/<int:convo_id>', methods=['GET', 'POST'])
+def conversation_chat(convo_id):
+    """
+    Handles displaying and adding messages to a specific conversation.
+    """
+    if 'user_email' not in session:
+        flash('You must be logged in.', 'error')
+        return redirect(url_for('login'))
+
+    conversations = load_data(MESSAGES_DATA_FILE)
+    convo = next((c for c in conversations if c.get('id') == convo_id), None)
+
+    if not convo or session['user_email'] not in convo['participants']:
+        flash('Conversation not found or you do not have permission to view it.', 'error')
+        return redirect(url_for('inbox'))
+
+    products = load_data(PRODUCTS_DATA_FILE)
+    product = next((p for p in products if p.get('id') == convo['product_id']), None)
+
+    if request.method == 'POST':
+        message_text = request.form.get('message_text')
+        if message_text:
+            new_message = {
+                'sender': session['user_email'],
+                'text': message_text,
+                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M")
+            }
+            convo['messages'].append(new_message)
+            save_data(conversations, MESSAGES_DATA_FILE)
+        return redirect(url_for('conversation_chat', convo_id=convo_id))
+
+    other_participant = next((p for p in convo['participants'] if p != session['user_email']), "User")
+    return render_template('conversation.html', product=product, seller_email=other_participant, conversation=convo)
+
 @app.route('/inbox')
 def inbox():
     if 'user_email' not in session:
