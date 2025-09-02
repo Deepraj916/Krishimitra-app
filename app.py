@@ -1,8 +1,8 @@
-# app.py - FINAL DATABASE VERSION
+# app.py - FINAL DATABASE VERSION (with Auto-Create)
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_
+from sqlalchemy import or_, inspect
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
@@ -14,7 +14,6 @@ import random
 from functools import wraps
 
 # --- Local Module Imports ---
-# Make sure these files exist and are correct
 from ml_model.predictor import predict_disease
 from scripts.price_scraper import get_market_prices
 
@@ -266,15 +265,16 @@ def verify_otp():
     # This route would handle the OTP logic
     return render_template('verify_otp.html')
 
-# This special route is for creating the database tables for the first time.
-@app.route('/init-db')
-def init_db():
-    with app.app_context():
+# --- This block runs ONCE when the app starts up ---
+with app.app_context():
+    inspector = inspect(db.engine)
+    # Check if the 'user' table exists. If not, create all tables.
+    if not inspector.has_table("user"):
+        print("Database tables not found, creating them...")
         db.create_all()
-    return "Database tables created!"
+        print("Database tables created.")
+    else:
+        print("Database tables already exist.")
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all() # For local development
     app.run(debug=True)
-
