@@ -119,6 +119,7 @@ def login():
             return redirect(url_for('store'))
         else:
             flash('Invalid credentials. Please try again.', 'error')
+            return redirect(url_for('login'))
     return render_template('login.html')
 
 @app.route('/logout')
@@ -252,7 +253,7 @@ def conversation_chat(convo_id):
 def inbox():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    conversations = Conversation.query.filter(or_(Conversation.buyer_id == session['user_id'], Conversation.seller_id == session['user_id'])).all()
+    conversations = Conversation.query.filter(or_(Conversation.buyer_id == session['user_id'], Conversation.seller_id == session['user_id'])).order_by(Conversation.id.desc()).all()
     return render_template('inbox.html', conversations=conversations)
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
@@ -276,3 +277,4 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all() # For local development
     app.run(debug=True)
+
