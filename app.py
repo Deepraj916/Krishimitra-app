@@ -15,8 +15,8 @@ from functools import wraps
 
 # --- Local Module Imports ---
 # Make sure these files exist and are correct
-# from ml_model.predictor import predict_disease
-# from scripts.price_scraper import get_market_prices
+from ml_model.predictor import predict_disease
+from scripts.price_scraper import get_market_prices
 
 # --- Initial Setup ---
 load_dotenv()
@@ -168,10 +168,102 @@ def delete_product(product_id):
     flash('Product has been deleted successfully.', 'success')
     return redirect(url_for('store'))
 
-# --- Add all other routes for disease detection, prices, messaging, and password reset here ---
-# These routes will need to be similarly converted to use the database models.
-# For example, disease_detection would query the Product model for suggested products.
-# The conversation routes would query the Conversation and Message models.
+@app.route('/detect', methods=['GET', 'POST'])
+def disease_detection():
+    if request.method == 'POST':
+        if 'leaf_image' not in request.files or request.files['leaf_image'].filename == '':
+            flash('No selected file', 'error')
+            return redirect(request.url)
+        
+        file = request.files['leaf_image']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            leaf_upload_path = os.path.join('static/leaf_uploads', filename)
+            file.save(leaf_upload_path)
+            
+            prediction_data = predict_disease(leaf_upload_path)
+            keyword = prediction_data.get('product_keyword')
+            
+            suggested_products = []
+            amazon_link = None
+            flipkart_link = None
+            
+            if keyword:
+                suggested_products = Product.query.filter(or_(Product.name.ilike(f'%{keyword}%'), Product.description.ilike(f'%{keyword}%'))).all()
+                url_safe_keyword = quote_plus(keyword)
+                amazon_link = f"https://www.amazon.in/s?k={url_safe_keyword}"
+                flipkart_link = f"https://www.flipkart.com/search?q={url_safe_keyword}"
+
+            return render_template(
+                'disease_detection.html', 
+                prediction_data=prediction_data,
+                uploaded_image=filename, 
+                products=suggested_products,
+                amazon_link=amazon_link,
+                flipkart_link=flipkart_link
+            )
+    return render_template('disease_detection.html', prediction_data=None)
+
+@app.route('/prices')
+def market_prices():
+    market_status_message, market_is_open = get_market_status()
+    price_data = []
+    if market_is_open:
+        price_data = get_market_prices()
+    return render_template('market_prices.html', prices=price_data, market_status_message=market_status_message, market_is_open=market_is_open)
+
+@app.route('/conversation/start/<int:product_id>')
+def conversation_start(product_id):
+    if 'user_id' not in session:
+        flash('You must be logged in to start a conversation.', 'error')
+        return redirect(url_for('login'))
+    product = Product.query.get_or_404(product_id)
+    if product.seller_id == session['user_id']:
+        flash('You cannot start a conversation with yourself.', 'error')
+        return redirect(url_for('store'))
+    
+    convo = Conversation.query.filter_by(product_id=product.id, buyer_id=session['user_id']).first()
+    if not convo:
+        convo = Conversation(product_id=product.id, buyer_id=session['user_id'], seller_id=product.seller_id)
+        db.session.add(convo)
+        db.session.commit()
+    return redirect(url_for('conversation_chat', convo_id=convo.id))
+
+@app.route('/conversation/chat/<int:convo_id>', methods=['GET', 'POST'])
+def conversation_chat(convo_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    convo = Conversation.query.get_or_404(convo_id)
+    if session['user_id'] not in [convo.buyer_id, convo.seller_id]:
+        flash('You do not have permission to view this conversation.', 'error')
+        return redirect(url_for('inbox'))
+    if request.method == 'POST':
+        text = request.form.get('message_text')
+        if text:
+            msg = Message(conversation_id=convo.id, sender_id=session['user_id'], text=text)
+            db.session.add(msg)
+            db.session.commit()
+        return redirect(url_for('conversation_chat', convo_id=convo_id))
+    
+    other_participant = convo.seller if session['user_id'] == convo.buyer_id else convo.buyer
+    return render_template('conversation.html', product=convo.product, conversation=convo, seller_email=other_participant.email)
+
+@app.route('/inbox')
+def inbox():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    conversations = Conversation.query.filter(or_(Conversation.buyer_id == session['user_id'], Conversation.seller_id == session['user_id'])).all()
+    return render_template('inbox.html', conversations=conversations)
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    # This route would need to be implemented with an email service
+    return render_template('forgot_password.html')
+
+@app.route('/verify_otp', methods=['GET', 'POST'])
+def verify_otp():
+    # This route would handle the OTP logic
+    return render_template('verify_otp.html')
 
 # This special route is for creating the database tables for the first time.
 @app.route('/init-db')
@@ -182,6 +274,5 @@ def init_db():
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all() # For local development, create tables if they don't exist.
+        db.create_all() # For local development
     app.run(debug=True)
-
