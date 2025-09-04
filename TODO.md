@@ -1,10 +1,5 @@
-# TODO: Update Conversation Messaging System
+# TODO: Fix Backend Logic in app.py
 
-## Steps to Complete
-
-- [x] Edit templates/store.html: Update "Contact Seller" link to use 'conversation_start' route
-- [x] Edit templates/inbox.html: Update conversation links to use 'conversation_chat' with convo_id
-- [x] Edit templates/conversation.html: Update form action to use 'conversation_chat' with convo_id (already correct)
-- [x] Edit app.py: Add new routes (conversation_start, conversation_chat already present)
-- [x] Edit app.py: Add /inbox route to sort conversations by latest message timestamp
-- [ ] Test the updated conversation flow to ensure no regressions
+- [x] Replace conversation_start function with provided code
+- [x] Replace conversation_chat function with provided code
+- [x] Replace inbox function with provided code (fix syntax)

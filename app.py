@@ -22,10 +22,24 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = 'your_super_secret_key'
 
+# app.py
+
 # --- Database Configuration ---
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+# This new logic checks if the live DATABASE_URL exists.
+# If not, it creates a local database file named 'instance/krishimitra.sqlite'.
+db_url = os.getenv('DATABASE_URL')
+if not db_url:
+    # Set up the path for the local SQLite database
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(project_dir, "instance", "krishimitra.sqlite")
+    # Ensure the 'instance' directory exists
+    os.makedirs(os.path.join(project_dir, "instance"), exist_ok=True)
+    db_url = f"sqlite:///{db_path}"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+# -----------------------------
 
 # --- Configuration ---
 UPLOAD_FOLDER = 'static/product_uploads'
@@ -217,42 +231,70 @@ def conversation_start(product_id):
     if 'user_id' not in session:
         flash('You must be logged in to start a conversation.', 'error')
         return redirect(url_for('login'))
+    
     product = Product.query.get_or_404(product_id)
+    
     if product.seller_id == session['user_id']:
         flash('You cannot start a conversation with yourself.', 'error')
         return redirect(url_for('store'))
     
-    convo = Conversation.query.filter_by(product_id=product.id, buyer_id=session['user_id']).first()
+    # Check if a conversation already exists between this buyer and seller for this product
+    convo = Conversation.query.filter_by(
+        product_id=product.id,
+        buyer_id=session['user_id'],
+        seller_id=product.seller_id
+    ).first()
+    
     if not convo:
-        convo = Conversation(product_id=product.id, buyer_id=session['user_id'], seller_id=product.seller_id)
+        # If no conversation exists, create a new one
+        convo = Conversation(
+            product_id=product.id,
+            buyer_id=session['user_id'],
+            seller_id=product.seller_id
+        )
         db.session.add(convo)
         db.session.commit()
+        
     return redirect(url_for('conversation_chat', convo_id=convo.id))
 
 @app.route('/conversation/chat/<int:convo_id>', methods=['GET', 'POST'])
 def conversation_chat(convo_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
+        
     convo = Conversation.query.get_or_404(convo_id)
+    
+    # Security check: Make sure the current user is part of this conversation
     if session['user_id'] not in [convo.buyer_id, convo.seller_id]:
         flash('You do not have permission to view this conversation.', 'error')
         return redirect(url_for('inbox'))
+        
     if request.method == 'POST':
         text = request.form.get('message_text')
         if text:
-            msg = Message(conversation_id=convo.id, sender_id=session['user_id'], text=text)
+            msg = Message(
+                conversation_id=convo.id,
+                sender_id=session['user_id'],
+                text=text,
+                timestamp=datetime.utcnow() # Ensure timestamp is set
+            )
             db.session.add(msg)
             db.session.commit()
-        return redirect(url_for('conversation_chat', convo_id=convo_id))
+        return redirect(url_for('conversation_chat', convo_id=convo.id))
     
-    other_participant = convo.seller if session['user_id'] == convo.buyer_id else convo.buyer
-    return render_template('conversation.html', product=convo.product, conversation=convo, seller_email=other_participant.email)
+    return render_template('conversation.html', conversation=convo)
 
 @app.route('/inbox')
 def inbox():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    conversations = Conversation.query.filter(or_(Conversation.buyer_id == session['user_id'], Conversation.seller_id == session['user_id'])).order_by(Conversation.id.desc()).all()
+        
+    # Find all conversations where the user is either the buyer or the seller
+    conversations = Conversation.query.filter(
+        or_(Conversation.buyer_id == session['user_id'], Conversation.seller_id == session['user_id'])
+    ).all()
+    
+    # We will sort them in the template, or you can sort them here if needed
     return render_template('inbox.html', conversations=conversations)
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
