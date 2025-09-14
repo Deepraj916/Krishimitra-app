@@ -312,9 +312,15 @@ def verify_otp():
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
-    # Fetch all users from the database, ordering them by ID
+    # Fetch all users and all products from the database
     all_users = User.query.order_by(User.id).all()
-    return render_template('admin_dashboard.html', users=all_users)
+    all_products = Product.query.order_by(Product.id.desc()).all()
+
+    return render_template(
+        'admin_dashboard.html',
+        users=all_users,
+        products=all_products
+    )
 
 @app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
 @admin_required
@@ -325,14 +331,23 @@ def delete_user(user_id):
         return redirect(url_for('admin_dashboard'))
 
     user_to_delete = User.query.get_or_404(user_id)
-    
+
     # Optional: Before deleting the user, delete their products to keep the database clean
     Product.query.filter_by(seller_id=user_id).delete()
-    
+
     db.session.delete(user_to_delete)
     db.session.commit()
-    
+
     flash(f"User {user_to_delete.email} has been deleted successfully.", 'success')
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/delete_product/<int:product_id>', methods=['POST'])
+@admin_required
+def admin_delete_product(product_id):
+    product = Product.query.get_or_404(product_id)
+    db.session.delete(product)
+    db.session.commit()
+    flash('Product has been deleted successfully.', 'success')
     return redirect(url_for('admin_dashboard'))
 
 

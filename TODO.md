@@ -1,5 +1,7 @@
-# TODO: Update Admin Dashboard
+# TODO List for Admin Dashboard Update
 
-- [x] Update the admin_dashboard function in app.py to fetch all users from the database and pass them to the template
-- [x] Add the delete_user route in app.py for deleting users with proper checks
-- [x] Update the admin_dashboard.html template to display users in a table with delete buttons
+- [x] Update /admin route in app.py to fetch all products
+- [x] Add admin_delete_product route in app.py
+- [x] Update admin_dashboard.html to include product management table
+- [ ] Test the admin dashboard to ensure users and products are displayed
+- [ ] Test delete product functionality
