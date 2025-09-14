@@ -1,7 +1,18 @@
 /* static/css/style.css */
 
+/* static/css/style.css - ADD TO THE TOP */
+html, body {
+    height: 100%;
+}
+
 body {
     background-color: #f8f9fa; /* A light grey from Bootstrap's palette */
+    display: flex;
+    flex-direction: column;
+}
+
+main.container {
+    flex-grow: 1;
 }
 
 /* Make the navbar brand slightly bolder */
