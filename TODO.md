@@ -1,5 +1,4 @@
-# TODO: Fix Backend Logic in app.py
-
-- [x] Replace conversation_start function with provided code
-- [x] Replace conversation_chat function with provided code
-- [x] Replace inbox function with provided code (fix syntax)
+- [x] Add @admin_required decorator in app.py near seller_required
+- [x] Add /admin route in app.py protected by @admin_required
+- [x] Create templates/admin_dashboard.html with placeholder content
+- [x] Edit templates/base.html to replace user links with dropdown menu including admin dashboard link for admins

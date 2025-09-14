@@ -23,9 +23,20 @@ app = Flask(__name__)
 app.secret_key = 'your_super_secret_key'
 
 # --- Database Configuration ---
+# This new logic checks if the live DATABASE_URL from Render exists.
+# If not, it creates and uses a local database file named 'instance/krishimitra.sqlite'.
 db_url = os.getenv('DATABASE_URL')
-if db_url and db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql://", 1)
+if not db_url:
+    # Set up the path for the local SQLite database
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(project_dir, "instance", "krishimitra.sqlite")
+    # Ensure the 'instance' directory exists so the file can be created
+    os.makedirs(os.path.join(project_dir, "instance"), exist_ok=True)
+    db_url = f"sqlite:///{db_path}"
+else:
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -92,6 +103,20 @@ def seller_required(f):
         if session.get('role') != 'seller':
             flash('You do not have permission to access this page.', 'error')
             return redirect(url_for('store'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # First check if the user is logged in at all
+        if 'user_id' not in session:
+            flash('Please log in to access this page.', 'error')
+            return redirect(url_for('login'))
+        # Then check if the user's role is 'admin'
+        if session.get('role') != 'admin':
+            flash('You do not have the required permissions to access this page.', 'error')
+            return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -283,6 +308,12 @@ def forgot_password():
 def verify_otp():
     # Placeholder
     return render_template('verify_otp.html')
+
+@app.route('/admin')
+@admin_required
+def admin_dashboard():
+    # For now, it will be a simple page. We will add statistics later.
+    return render_template('admin_dashboard.html')
 
 
 if __name__ == '__main__':

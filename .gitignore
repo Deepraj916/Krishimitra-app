@@ -6,4 +6,3 @@ __pycache__/
 *.pyc
 
 # Ignore the local database folder
-instance/
