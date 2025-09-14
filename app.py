@@ -284,22 +284,6 @@ def verify_otp():
     # Placeholder
     return render_template('verify_otp.html')
 
-# Add this entire function to the bottom of app.py
-
-@app.route('/make-admin-now')
-def make_admin():
-    # --- IMPORTANT: Change this to your registered email address ---
-    admin_email = "deeprajabhang@gmail.com"
-    # ---------------------------------------------------------
-
-    user = User.query.filter_by(email=admin_email).first()
-    
-    if user:
-        user.role = 'admin'
-        db.session.commit()
-        return "SUCCESS: Your account has been promoted to Admin."
-    else:
-        return f"ERROR: User with email {admin_email} not found. Please register first."
 
 if __name__ == '__main__':
     app.run(debug=True)
