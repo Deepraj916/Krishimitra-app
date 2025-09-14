@@ -49,6 +49,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 # --- DATABASE MODELS ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     mobile = db.Column(db.String(20), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
@@ -169,6 +170,12 @@ def add_product():
             flash('Your product has been listed!', 'success')
             return redirect(url_for('store'))
     return render_template('add_product.html')
+
+@app.route('/dashboard')
+@seller_required
+def dashboard():
+    products = Product.query.filter_by(seller_id=session['user_id']).all()
+    return render_template('dashboard.html', products=products)
 
 @app.route('/delete_product/<int:product_id>', methods=['POST'])
 @seller_required
@@ -306,6 +313,37 @@ def forgot_password():
 def verify_otp():
     # This route would handle the OTP logic
     return render_template('verify_otp.html')
+
+@app.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
+@seller_required
+def edit_product(product_id):
+    product = Product.query.get_or_404(product_id)
+
+    # Security check: Ensure the logged-in user is the seller of this product
+    if product.seller_id != session.get('user_id'):
+        flash('You are not authorized to edit this product.', 'error')
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        # Update the product's details from the form
+        product.name = request.form['name']
+        product.category = request.form['category']
+        product.description = request.form['description']
+        product.price = request.form['price']
+        
+        # Handle optional image update
+        file = request.files.get('image')
+        if file and file.filename != '':
+            if allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                product.image = filename # Update the image filename
+        
+        db.session.commit()
+        flash('Your product has been updated successfully!', 'success')
+        return redirect(url_for('dashboard'))
+
+    return render_template('edit_product.html', product=product)
 
 # --- This block runs ONCE when the app starts up ---
 with app.app_context():

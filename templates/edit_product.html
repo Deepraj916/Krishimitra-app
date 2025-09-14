@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Edit Product{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-lg">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="card-title text-center mb-4">Edit Your Product Listing</h2>
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Product Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ product.name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="Products" {% if product.category == 'Products' %}selected{% endif %}>Products (Fertilizers, etc.)</option>
+                            <option value="Tools" {% if product.category == 'Tools' %}selected{% endif %}>Tools</option>
+                            <option value="Seeds" {% if product.category == 'Seeds' %}selected{% endif %}>Seeds</option>
+                            <option value="Others" {% if product.category == 'Others' %}selected{% endif %}>Others</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required>{{ product.description }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="text" class="form-control" id="price" name="price" value="{{ product.price }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Change Product Image (Optional)</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                        <small class="form-text text-muted">Current image: {{ product.image }}</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 mt-3">Save Changes</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

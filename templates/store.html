@@ -9,6 +9,7 @@
         <p class="lead">Buy and sell agricultural products, tools, and seeds from a trusted community.</p>
     </div>
 </div>
+
 <div class="category-nav">
     <a href="{{ url_for('store') }}" class="{% if not active_category %}active{% endif %}">All</a>
     <a href="{{ url_for('store', category='Products') }}" class="{% if active_category == 'Products' %}active{% endif %}">Products</a>
@@ -32,7 +33,7 @@
     </div>
 {% endif %}
 
-{% if search_query %}
+{% if search_query and products %}
     <h2 class="text-center">Showing results for: "{{ search_query }}"</h2>
 {% endif %}
 
@@ -46,24 +47,29 @@
                 <p class="card-text text-muted"><span class="badge bg-secondary">{{ product.category }}</span></p>
                 <p class="card-text flex-grow-1">{{ product.description | truncate(80) }}</p>
                 <h6 class="card-subtitle mb-2 text-success">{{ product.price }}</h6>
-                <p class="card-text"><small class="text-muted">Seller: {{ product.seller }}</small></p>
+                <p class="card-text"><small class="text-muted">Seller: {{ product.seller_user.email }}</small></p>
                 <div class="mt-auto d-flex justify-content-between align-items-center">
                     <a href="{{ url_for('conversation_start', product_id=product.id) }}" class="btn btn-primary btn-sm">Contact Seller</a>
-                    {% if session.get('role') == 'seller' and session.get('user_email') == product.seller %}
-                        <form action="{{ url_for('delete_product', product_id=product.id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
-                            <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
-                        </form>
+                    
+                    <!-- START: THIS IS THE CORRECTED LOGIC -->
+                    {% if session.get('user_id') == product.seller_id %}
+                        <div class="d-flex">
+                             <a href="{{ url_for('edit_product', product_id=product.id) }}" class="btn btn-sm btn-outline-primary me-2">Edit</a>
+                            <form action="{{ url_for('delete_product', product_id=product.id) }}" method="POST" onsubmit="return confirm('Are you sure?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
                     {% endif %}
+                    <!-- END: CORRECTED LOGIC -->
+
                 </div>
             </div>
         </div>
     </div>
     {% else %}
-        <!-- START: New 'Not Found' block -->
         <div class="col-12 text-center">
             <div class="not-found-container p-5">
                 <h4>No products found in our store for "{{ search_query }}".</h4>
-
                 {% if amazon_link and flipkart_link %}
                     <p class="text-muted mt-3">You can try searching for this item on other platforms:</p>
                     <div class="external-links mt-3">
@@ -73,7 +79,6 @@
                 {% endif %}
             </div>
         </div>
-        <!-- END: New 'Not Found' block -->
     {% endfor %}
 </div>
 {% endblock %}
