@@ -64,8 +64,11 @@ def get_crop_advice(question):
             f"Question: {question}"
         ]
 
-        # Use the standard text model for this task
-        text_model = genai.GenerativeModel('gemini-pro')
+        # --- THIS IS THE FIX ---
+        # We are now using the new, correct model name
+        text_model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        # --------------------
+
         response = text_model.generate_content(prompt)
 
         return response.text
