@@ -1,7 +1,9 @@
-# TODO List for Admin Dashboard Update
+# Admin Dashboard Statistics Update
 
-- [x] Update /admin route in app.py to fetch all products
-- [x] Add admin_delete_product route in app.py
-- [x] Update admin_dashboard.html to include product management table
-- [ ] Test the admin dashboard to ensure users and products are displayed
-- [ ] Test delete product functionality
+## Completed Tasks
+- [x] Update admin_dashboard function in app.py to calculate and pass user_count, product_count, conversation_count
+- [x] Replace entire contents of templates/admin_dashboard.html with new template including statistics cards and existing user/product tables
+
+## Followup Steps
+- [ ] Test the admin dashboard to ensure statistics are displayed correctly
+- [ ] Verify that the counts match the database records

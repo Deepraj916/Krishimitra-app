@@ -315,11 +315,22 @@ def admin_dashboard():
     # Fetch all users and all products from the database
     all_users = User.query.order_by(User.id).all()
     all_products = Product.query.order_by(Product.id.desc()).all()
-
+    
+    # --- START: New Statistics Logic ---
+    # Calculate the total counts for key metrics
+    user_count = User.query.count()
+    product_count = Product.query.count()
+    conversation_count = Conversation.query.count()
+    # --- END: New Statistics Logic ---
+    
     return render_template(
-        'admin_dashboard.html',
-        users=all_users,
-        products=all_products
+        'admin_dashboard.html', 
+        users=all_users, 
+        products=all_products,
+        # Pass the new statistics to the page
+        user_count=user_count,
+        product_count=product_count,
+        conversation_count=conversation_count
     )
 
 @app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
