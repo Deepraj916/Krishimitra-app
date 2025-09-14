@@ -3,11 +3,71 @@
 
 {% block content %}
 <div class="container my-4">
-    <h1 class="mb-4">Admin Dashboard</h1>
-    <p class="lead">Welcome, Admin! This is your control center for the website.</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Admin Dashboard</h1>
+    </div>
 
-    <div class="alert alert-info">
-        User and Product management features will be added here soon.
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- User Management Card -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h4 class="mb-0">User Management</h4>
+        </div>
+        <div class="card-body">
+            {% if users %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Mobile</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.mobile }}</td>
+                                    <td>
+                                        {% if user.role == 'admin' %}
+                                            <span class="badge bg-danger">{{ user.role|capitalize }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ user.role|capitalize }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <!-- Prevent the delete button from showing for your own account -->
+                                        {% if user.id != session.get('user_id') %}
+                                            <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this user and all their products?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted">No users found.</p>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

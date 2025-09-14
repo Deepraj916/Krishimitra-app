@@ -312,8 +312,28 @@ def verify_otp():
 @app.route('/admin')
 @admin_required
 def admin_dashboard():
-    # For now, it will be a simple page. We will add statistics later.
-    return render_template('admin_dashboard.html')
+    # Fetch all users from the database, ordering them by ID
+    all_users = User.query.order_by(User.id).all()
+    return render_template('admin_dashboard.html', users=all_users)
+
+@app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
+@admin_required
+def delete_user(user_id):
+    # Prevent an admin from deleting their own account
+    if user_id == session.get('user_id'):
+        flash('You cannot delete your own admin account.', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+    user_to_delete = User.query.get_or_404(user_id)
+    
+    # Optional: Before deleting the user, delete their products to keep the database clean
+    Product.query.filter_by(seller_id=user_id).delete()
+    
+    db.session.delete(user_to_delete)
+    db.session.commit()
+    
+    flash(f"User {user_to_delete.email} has been deleted successfully.", 'success')
+    return redirect(url_for('admin_dashboard'))
 
 
 if __name__ == '__main__':
