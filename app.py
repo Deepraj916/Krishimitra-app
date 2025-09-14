@@ -1,3 +1,5 @@
+# app.py - FINAL DATABASE VERSION (with Auto-Create)
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, inspect
@@ -79,10 +81,6 @@ with app.app_context():
         print("Database tables created.")
     else:
         print("Database tables already exist.")
-
-# --- Helper Functions and Routes (all your routes go here) ---
-# ... (all your @app.route functions like /register, /login, /store, etc.) ...
-# ... Make sure all your routes from the previous complete file are here ...
 
 # --- Helper Functions ---
 def allowed_file(filename):
@@ -273,7 +271,7 @@ def conversation_chat(convo_id):
 @app.route('/inbox')
 def inbox():
     if 'user_id' not in session: return redirect(url_for('login'))
-    conversations = Conversation.query.filter(or_(Conversation.buyer_id == session['user_id'], Conversation.seller_id == session['user_id'])).all()
+    conversations = Conversation.query.filter(or_(Conversation.buyer_id == session['user_id'], Conversation.seller_id == session['user_id'])).order_by(Conversation.id.desc()).all()
     return render_template('inbox.html', conversations=conversations)
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
@@ -288,25 +286,3 @@ def verify_otp():
 
 if __name__ == '__main__':
     app.run(debug=True)
-```
-
-I have now updated the `app.py` file in your Canvas with the final, correct code. It removes the broken `/init-db` link and replaces it with a smart, automatic system.
-
-### What to Do Next (Final Steps)
-
-1.  **Clean Up Your Project Folder:**
-    * Delete the `build.sh` file.
-    * Delete the `create_tables.py` file.
-
-2.  **Change Your Render Build Command:**
-    * Go to your Render dashboard -> **Settings**.
-    * Change the **"Build Command"** back to: `pip install -r requirements.txt`
-    * Click **"Save Changes"**.
-
-3.  **Push the Final Fix to GitHub:**
-    ```bash
-    git add .
-    git commit -m "FIX: Implement automatic database table creation"
-    git push origin main
-    
-
