@@ -16,6 +16,7 @@ from functools import wraps
 # --- Local Module Imports ---
 from ml_model.predictor import predict_disease, get_crop_advice
 from scripts.price_scraper import get_market_prices
+from email_utils import send_otp_email
 
 # --- Initial Setup ---
 load_dotenv()
@@ -316,12 +317,55 @@ def inbox():
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
-    # Placeholder
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            otp = str(random.randint(100000, 999999))
+            session['reset_otp'] = otp
+            session['reset_user'] = user.email
+
+            email_sent = send_otp_email(user.email, otp)
+
+            if email_sent:
+                flash(f"An OTP has been sent to your email: {user.email}", 'info')
+                return redirect(url_for('verify_otp'))
+            else:
+                flash('Could not send OTP email. Please check your credentials and try again later.', 'error')
+        else:
+            flash('This email address is not registered.', 'error')
     return render_template('forgot_password.html')
 
 @app.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
-    # Placeholder
+    if 'reset_otp' not in session or 'reset_user' not in session:
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        user_otp = request.form.get('otp')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if user_otp != session.get('reset_otp'):
+            flash('Invalid OTP. Please try again.', 'error')
+            return redirect(url_for('verify_otp'))
+
+        if new_password != confirm_password:
+            flash('New passwords do not match.', 'error')
+            return redirect(url_for('verify_otp'))
+
+        user_to_update = User.query.filter_by(email=session['reset_user']).first()
+        if user_to_update:
+            user_to_update.password = generate_password_hash(new_password)
+            db.session.commit()
+
+            session.pop('reset_otp', None)
+            session.pop('reset_user', None)
+
+            flash('Your password has been reset successfully! Please log in.', 'success')
+            return redirect(url_for('login'))
+
     return render_template('verify_otp.html')
 
 @app.route('/admin')
