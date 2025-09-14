@@ -48,3 +48,28 @@ def predict_disease(image_path):
             "remedy_description": "Could not get a valid response from the AI model.",
             "product_keyword": None
         }
+
+def get_crop_advice(question):
+    """
+    Takes a user's question and returns expert agricultural advice from the Gemini AI.
+    """
+    try:
+        # A detailed prompt to guide the AI's response
+        prompt = [
+            "You are an expert agricultural scientist providing advice to farmers in India.",
+            "Your tone should be helpful, clear, and easy to understand.",
+            "Provide a practical, actionable answer to the following question.",
+            "Format your answer using simple markdown for readability (e.g., use bullet points with '*' or bold text with '**'). Do not use HTML tags.",
+            "---",
+            f"Question: {question}"
+        ]
+
+        # Use the standard text model for this task
+        text_model = genai.GenerativeModel('gemini-pro')
+        response = text_model.generate_content(prompt)
+
+        return response.text
+
+    except Exception as e:
+        print(f"An error occurred during crop advice generation: {e}")
+        return "Sorry, I was unable to process your request at this time. The AI service may be temporarily unavailable."

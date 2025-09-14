@@ -14,7 +14,7 @@ import random
 from functools import wraps
 
 # --- Local Module Imports ---
-from ml_model.predictor import predict_disease
+from ml_model.predictor import predict_disease, get_crop_advice
 from scripts.price_scraper import get_market_prices
 
 # --- Initial Setup ---
@@ -126,6 +126,17 @@ def get_market_status():
     if now.weekday() == 6: return "Today is a holiday, the market is closed.", False
     if 10 <= now.hour < 18: return f"Market is currently open. (Current time: {now.strftime('%I:%M %p')})", True
     else: return f"Market is currently closed (10 AM - 6 PM IST). (Current time: {now.strftime('%I:%M %p')})", False
+
+from functools import wraps
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.', 'error')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # --- ROUTES ---
 @app.route('/')
@@ -365,6 +376,19 @@ def admin_delete_product(product_id):
     flash('Product has been deleted successfully.', 'success')
     return redirect(url_for('admin_dashboard'))
 
+
+@app.route('/crop_advisory', methods=['GET', 'POST'])
+@login_required
+def crop_advisory():
+    if request.method == 'POST':
+        user_question = request.form.get('user_question')
+        if user_question:
+            # Get the expert answer from our new function
+            ai_answer = get_crop_advice(user_question)
+            return render_template('crop_advisory.html', user_question=user_question, ai_answer=ai_answer)
+
+    # This is for when the user first visits the page
+    return render_template('crop_advisory.html', user_question=None, ai_answer=None)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,6 +1,6 @@
-# TODO: Implement "About Us" Page and Professional Footer
-
-- [x] Add `/about` route in `app.py`
-- [x] Create `templates/about.html` with provided content
-- [x] Add footer section to `templates/base.html`
-- [x] Add sticky footer CSS rules to `static/css/style.css`
+- [x] Create templates/crop_advisory.html with the provided HTML content
+- [x] Add get_crop_advice function to ml_model/predictor.py
+- [x] Add login_required decorator to app.py
+- [x] Add import for get_crop_advice in app.py
+- [x] Add /crop_advisory route to app.py
+- [x] Update templates/base.html to add AI Advisor link in nav
