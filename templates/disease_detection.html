@@ -20,16 +20,12 @@
                         <button type="submit" class="btn btn-warning btn-lg">Detect Disease</button>
                     </form>
 
-                    <!-- START: New and Improved Results Section -->
                     {% if prediction_data %}
                         <div class="row">
-                            <!-- Left Column: Image -->
                             <div class="col-md-5 text-center">
                                 <h3>Uploaded Image</h3>
-                                <img src="{{ url_for('static', filename='leaf_uploads/' + uploaded_image) }}" alt="Uploaded Leaf Image" class="img-fluid rounded shadow-sm mb-3">
+                                <img src="{{ url_for('static', filename='leaf_uploads/' + uploaded_image, v=cache_buster) }}" alt="Uploaded Leaf Image" class="img-fluid rounded shadow-sm mb-3">
                             </div>
-
-                            <!-- Right Column: Diagnosis Details -->
                             <div class="col-md-7">
                                 <h3>AI Diagnosis</h3>
                                 <ul class="list-group">
@@ -41,15 +37,15 @@
                                         Condition:
                                         {% if prediction_data.disease_name == 'Healthy' %}
                                             <span class="badge bg-success rounded-pill fs-6">{{ prediction_data.disease_name }}</span>
+                                        {% elif 'Error' in prediction_data.disease_name or 'Failed' in prediction_data.disease_name or 'Blocked' in prediction_data.disease_name %}
+                                            <span class="badge bg-warning text-dark rounded-pill fs-6">{{ prediction_data.disease_name }}</span>
                                         {% else %}
                                             <span class="badge bg-danger rounded-pill fs-6">{{ prediction_data.disease_name }}</span>
                                         {% endif %}
                                     </li>
                                 </ul>
-
                                 <h5 class="mt-4">Suggested Remedy</h5>
                                 <p>{{ prediction_data.remedy_description }}</p>
-
                                 {% if prediction_data.product_keyword %}
                                     <div class="external-links mt-3">
                                         <p>Purchase remedy online:</p>
@@ -59,37 +55,12 @@
                                 {% endif %}
                             </div>
                         </div>
-
-                        <!-- Suggested Products from Our Store -->
-                        {% if products %}
-                        <div class="suggested-products mt-5">
-                            <h3 class="text-center">Available Remedies in Our Store</h3>
-                            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-1">
-                                {% for product in products %}
-                                    <div class="col">
-                                        <div class="card h-100 shadow-sm">
-                                            <img src="{{ url_for('static', filename='product_uploads/' + product.image) }}" class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
-                                            <div class="card-body d-flex flex-column">
-                                                <h5 class="card-title">{{ product.name }}</h5>
-                                                <p class="card-text"><small class="text-muted">{{ product.category }}</small></p>
-                                                <div class="mt-auto">
-                                                    <a href="{{ url_for('conversation', product_id=product.id) }}" class="btn btn-primary btn-sm">Contact Seller</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
                     {% else %}
-                        <!-- Image Preview Section -->
                         <div class="text-center mt-4" id="imagePreviewContainer" style="display:none;">
                             <h3>Image Preview</h3>
                             <img id="imagePreview" src="#" alt="Image Preview" class="img-fluid rounded shadow-sm" style="max-height: 300px;"/>
                         </div>
                     {% endif %}
-                    <!-- END: Results Section -->
                 </div>
             </div>
         </div>

@@ -12,16 +12,18 @@ if not api_key:
     raise ValueError("GEMINI_API_KEY not found in .env file.")
 genai.configure(api_key=api_key)
 
-model = genai.GenerativeModel('gemini-1.5-flash-latest')
+# Initialize the Gemini models
+vision_model = genai.GenerativeModel('gemini-1.5-flash-latest')
+text_model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 def predict_disease(image_path):
     """
-    Takes an image path and returns a detailed JSON object with plant, disease, remedy, and keyword.
+    Takes an image path and returns a detailed JSON object using Gemini AI.
+    Includes robust error handling for safety filters and silent failures.
     """
     try:
         img = Image.open(image_path)
         
-        # New, more detailed prompt
         prompt = [
             "You are an expert agricultural botanist. Analyze this image of a plant leaf.",
             "Respond ONLY with a single JSON object in the following format:",
@@ -30,23 +32,37 @@ def predict_disease(image_path):
               "plant_name": "Name of the plant (e.g., 'Tomato', 'Potato', 'Rose')",
               "disease_name": "Name of the disease or 'Healthy'",
               "remedy_description": "A brief, one or two-sentence suggestion for treatment. If healthy, suggest a general care tip.",
-              "product_keyword": "A single, generic search term for a product to treat the disease (e.g., 'fungicide', 'neem oil', 'bactericide'). If healthy, this should be null."
+              "product_keyword": "A single, generic search term for a product to treat the disease (e.g., 'fungicide', 'neem oil'). If healthy, this should be null."
             }
             """,
             img
         ]
         
-        response = model.generate_content(prompt)
+        response = vision_model.generate_content(prompt)
+
+        # Robust error handling for silent failures
+        if response.prompt_feedback.block_reason:
+            print(f"AI blocked the image. Reason: {response.prompt_feedback.block_reason}")
+            return {
+                "plant_name": "N/A", "disease_name": "Image Blocked by AI",
+                "remedy_description": "The uploaded image was blocked by the AI's safety filters. This can happen with blurry or unusual images. Please try again with a clearer picture.", "product_keyword": None
+            }
+        
+        if not response.text:
+            print("AI returned an empty response.")
+            return {
+                "plant_name": "N/A", "disease_name": "Analysis Failed",
+                "remedy_description": "The AI was unable to analyze this image. Please try again with a clearer picture.", "product_keyword": None
+            }
+
         response_text = response.text.strip().replace('```json', '').replace('```', '')
         return json.loads(response_text)
         
     except Exception as e:
         print(f"An error occurred during prediction: {e}")
         return {
-            "plant_name": "Unknown",
-            "disease_name": "Prediction Error",
-            "remedy_description": "Could not get a valid response from the AI model.",
-            "product_keyword": None
+            "plant_name": "N/A", "disease_name": "Prediction Error",
+            "remedy_description": "A technical error occurred while trying to get a prediction. Please try again.", "product_keyword": None
         }
 
 def get_crop_advice(question):
@@ -54,25 +70,18 @@ def get_crop_advice(question):
     Takes a user's question and returns expert agricultural advice from the Gemini AI.
     """
     try:
-        # A detailed prompt to guide the AI's response
         prompt = [
             "You are an expert agricultural scientist providing advice to farmers in India.",
             "Your tone should be helpful, clear, and easy to understand.",
             "Provide a practical, actionable answer to the following question.",
-            "Format your answer using simple markdown for readability (e.g., use bullet points with '*' or bold text with '**'). Do not use HTML tags.",
+            "Format your answer using simple markdown (e.g., use bullet points, bold text). Do not use HTML tags.",
             "---",
             f"Question: {question}"
         ]
-
-        # --- THIS IS THE FIX ---
-        # We are now using the new, correct model name
-        text_model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        # --------------------
-
+        
         response = text_model.generate_content(prompt)
-
         return response.text
-
+        
     except Exception as e:
         print(f"An error occurred during crop advice generation: {e}")
         return "Sorry, I was unable to process your request at this time. The AI service may be temporarily unavailable."
