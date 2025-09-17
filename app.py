@@ -3,12 +3,11 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, inspect
+from datetime import date, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import os
-from email_utils import send_report_to_admin
-from email_utils import send_otp_email
 from datetime import datetime
 import pytz
 from urllib.parse import quote_plus
@@ -18,6 +17,8 @@ import time
 
 # --- Local Module Imports ---
 from ml_model.predictor import predict_disease, get_crop_advice
+from scripts.price_scraper import get_market_prices
+from email_utils import send_report_to_admin, send_otp_email
 
 # --- Initial Setup ---
 load_dotenv()
@@ -123,13 +124,22 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# app.py
+
 def get_market_status():
+    """Checks if the agricultural market is likely open based on Indian time."""
     IST = pytz.timezone('Asia/Kolkata')
     now = datetime.now(IST)
-    if now.weekday() == 6: return "Today is a holiday, the market is closed.", False
-    if 10 <= now.hour < 18: return f"Market is currently open. (Current time: {now.strftime('%I:%M %p')})", True
-    else: return f"Market is currently closed (10 AM - 6 PM IST). (Current time: {now.strftime('%I:%M %p')})", False
 
+    # Check for Sunday (weekday() returns 6 for Sunday)
+    if now.weekday() == 6:
+        return "Today is a holiday, the market is closed.", False
+
+    # Check for market hours (e.g., 10 AM to 6 PM)
+    if 10 <= now.hour < 18:
+        return f"Market is currently open. Last updated prices are shown below. (Current time: {now.strftime('%I:%M %p')})", True
+    else:
+        return f"Market is currently closed. Please check back during business hours (10 AM - 6 PM IST). (Current time: {now.strftime('%I:%M %p')})", False
 # --- ROUTES ---
 @app.route('/')
 def home():
@@ -277,13 +287,40 @@ def disease_detection():
             
     return render_template('disease_detection.html', prediction_data=None)
 
+# app.py
+
 @app.route('/prices')
 def market_prices():
-    market_status_message, market_is_open = get_market_status()
-    price_data = []
-    if market_is_open:
-        price_data = get_market_prices()
-    return render_template('market_prices.html', prices=price_data, market_status_message=market_status_message, market_is_open=market_is_open)
+    # Pre-defined lists for the dropdowns
+    markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur"]
+    commodities = ["Tomato", "Onion", "Potato", "Cabbage", "Brinjal", "Ginger(Green)", "Cauliflower"]
+
+    # Get user's filter selections from the URL
+    selected_market = request.args.get('market')
+    selected_commodity = request.args.get('commodity')
+    # --- NEW PART: Get the date choice ---
+    date_choice = request.args.get('date', 'today') # Default to 'today'
+
+    # --- NEW PART: Calculate the correct date string ---
+    if date_choice == 'yesterday':
+        target_date = date.today() - timedelta(days=1)
+    else:
+        target_date = date.today()
+
+    date_str = target_date.strftime('%Y-%m-%d') # Format as YYYY-MM-DD for the API
+
+    # Fetch the price data using all the selected filters
+    price_data = get_market_prices(market=selected_market, commodity=selected_commodity, date_str=date_str)
+
+    return render_template(
+        'market_prices.html', 
+        prices=price_data,
+        markets=markets,
+        commodities=commodities,
+        selected_market=selected_market,
+        selected_commodity=selected_commodity,
+        date_choice=date_choice # Pass the date choice to the template
+    )
 
 @app.route('/conversation/start/<int:product_id>')
 @login_required
@@ -312,7 +349,7 @@ def conversation_chat(convo_id):
             msg = Message(conversation_id=convo.id, sender_id=session['user_id'], text=text, timestamp=datetime.utcnow())
             db.session.add(msg)
             db.session.commit()
-        return redirect(url_for('conversation_chat', convo_id=convo.id))
+        return redirect(url_for('conversation_chat', convo_id=convo_id))
     return render_template('conversation.html', conversation=convo)
 
 @app.route('/inbox')
@@ -369,21 +406,16 @@ def forgot_password():
     if request.method == 'POST':
         email = request.form.get('email')
         user = User.query.filter_by(email=email).first()
-
         if user:
             otp = str(random.randint(100000, 999999))
             session['reset_otp'] = otp
             session['reset_user'] = user.email
-
-            # --- THIS IS THE FIX ---
-            # Call the real email sending function
             email_sent = send_otp_email(user.email, otp)
-
             if email_sent:
                 flash(f"An OTP has been sent to your email: {user.email}. Please check your inbox.", 'info')
                 return redirect(url_for('verify_otp'))
             else:
-                flash('Could not send OTP email. Please ensure the admin credentials are correct and try again later.', 'error')
+                flash('Could not send OTP email. Please ensure admin credentials are correct.', 'error')
         else:
             flash('This email address is not registered.', 'error')
     return render_template('forgot_password.html')
@@ -420,8 +452,6 @@ def crop_advisory():
         if user_question:
             ai_answer = get_crop_advice(user_question)
             return render_template('crop_advisory.html', user_question=user_question, ai_answer=ai_answer)
-        else:
-            return render_template('crop_advisory.html', user_question=None, ai_answer=None)
     return render_template('crop_advisory.html', user_question=None, ai_answer=None)
 
 @app.route('/contact', methods=['GET', 'POST'])
@@ -429,8 +459,7 @@ def contact_admin():
     if request.method == 'POST':
         subject = request.form.get('subject')
         message = request.form.get('message')
-        user_email = session.get('user_email', 'A visitor') # Get user's email if logged in
-
+        user_email = session.get('user_email', 'A visitor')
         if subject and message:
             email_sent = send_report_to_admin(subject, message, user_email)
             if email_sent:
@@ -438,7 +467,7 @@ def contact_admin():
             else:
                 flash('Sorry, there was an error sending your report. Please try again later.', 'danger')
             return redirect(url_for('contact_admin'))
-
     return render_template('contact_admin.html')
+
 if __name__ == '__main__':
     app.run(debug=True)

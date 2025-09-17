@@ -4,7 +4,50 @@
 {% block content %}
 <div class="text-center mb-4">
     <h1 class="display-6 fw-bold">Current Market Prices in Maharashtra</h1>
-    <p class="lead text-muted">Latest data from various agricultural markets.</p>
+    <p class="lead text-muted">Filter by market, commodity, and date to find the latest data.</p>
+</div>
+
+<!-- START: Date Selection Buttons (Corrected) -->
+<div class="text-center mb-4">
+    <div class="btn-group" role="group">
+        <!-- The endpoint name is now corrected to 'market_prices' -->
+        <a href="{{ url_for('market_prices', market=selected_market, commodity=selected_commodity, date='today') }}" class="btn {% if date_choice == 'today' %}btn-success{% else %}btn-outline-success{% endif %}">
+            Today's Prices
+        </a>
+        <a href="{{ url_for('market_prices', market=selected_market, commodity=selected_commodity, date='yesterday') }}" class="btn {% if date_choice == 'yesterday' %}btn-success{% else %}btn-outline-success{% endif %}">
+            Yesterday's Prices
+        </a>
+    </div>
+</div>
+<!-- END: New Buttons -->
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-center">
+            <input type="hidden" name="date" value="{{ date_choice }}">
+            <div class="col-md-5">
+                <label for="market" class="form-label">Select Market</label>
+                <select name="market" id="market" class="form-select">
+                    <option value="">All Markets</option>
+                    {% for market in markets %}
+                        <option value="{{ market }}" {% if selected_market == market %}selected{% endif %}>{{ market }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label for="commodity" class="form-label">Select Commodity</label>
+                <select name="commodity" id="commodity" class="form-select">
+                    <option value="">All Commodities</option>
+                    {% for commodity in commodities %}
+                        <option value="{{ commodity }}" {% if selected_commodity == commodity %}selected{% endif %}>{{ commodity }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 mt-auto">
+                <button type="submit" class="btn btn-success w-100">Filter</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <div class="card shadow-sm">
@@ -19,17 +62,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in prices %}
-                    <tr>
-                        <td>{{ item.commodity }}</td>
-                        <td>{{ item.market }}</td>
-                        <td>{{ item.price }}</td>
-                    </tr>
+                    {% if prices %}
+                        {% for item in prices %}
+                        <tr>
+                            <td>{{ item.commodity }}</td>
+                            <td>{{ item.market }}</td>
+                            <td>{{ item.price }}</td>
+                        </tr>
+                        {% endfor %}
                     {% else %}
-                    <tr>
-                        <td colspan="3" class="text-center">Could not fetch price data at this time.</td>
-                    </tr>
-                    {% endfor %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">
+                                No price data found for the selected date and filters.
+                            </td>
+                        </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
