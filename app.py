@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import os
 from email_utils import send_report_to_admin
+from email_utils import send_otp_email
 from datetime import datetime
 import pytz
 from urllib.parse import quote_plus
@@ -368,12 +369,21 @@ def forgot_password():
     if request.method == 'POST':
         email = request.form.get('email')
         user = User.query.filter_by(email=email).first()
+
         if user:
             otp = str(random.randint(100000, 999999))
             session['reset_otp'] = otp
             session['reset_user'] = user.email
-            flash(f"OTP for {user.email} is {otp}", 'info') # Placeholder
-            return redirect(url_for('verify_otp'))
+
+            # --- THIS IS THE FIX ---
+            # Call the real email sending function
+            email_sent = send_otp_email(user.email, otp)
+
+            if email_sent:
+                flash(f"An OTP has been sent to your email: {user.email}. Please check your inbox.", 'info')
+                return redirect(url_for('verify_otp'))
+            else:
+                flash('Could not send OTP email. Please ensure the admin credentials are correct and try again later.', 'error')
         else:
             flash('This email address is not registered.', 'error')
     return render_template('forgot_password.html')
