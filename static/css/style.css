@@ -99,3 +99,103 @@
 .flipkart-btn:hover {
     background-color: #1e5bb8;
 }
+
+/* Advisor Page Styles */
+.advisor-page-background {
+    background: url('../images/advisor.jpg') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+}
+
+.advisor-about {
+    color: white;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4);
+    font-size: 1.2rem;
+}
+
+.advisor-about .btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.8);
+    color: white;
+    text-shadow: inherit;
+}
+
+.advisor-about .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+/* Disease Detection Page Styles */
+.detection-page-background {
+    background: url('../images/detection-bg.jpeg') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+}
+
+.detection-about {
+    color: white;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4);
+    font-size: 1.2rem;
+    margin-top: 40px;
+}
+
+.detection-about .btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.8);
+    color: white;
+    text-shadow: inherit;
+}
+
+.detection-about .btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+.card.shadow-lg {
+    border-radius: 15px;
+    /* Add a slight standing effect with box shadow */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+/* static/css/style.css - ADD THIS AT THE END */
+
+/* Styling for AI Advisor Page Background */
+.advisor-page-background {
+    background: url('../images/advisor.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Styling for Report/Contact Page Background */
+.report-page-background {
+    background: url('../images/report.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* Styling for Disease Detection Page Background */
+.detection-page-background {
+    background: url('../images/report.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
+
+/* static/css/style.css - ADD THIS AT THE END */
+
+/* Styling for AI Advisor Page Background */
+.advisor-page-background {
+    background: url('../images/advisor.jpg') no-repeat center center fixed;
+    background-size: cover;
+}

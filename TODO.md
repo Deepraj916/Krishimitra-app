@@ -1,6 +1,1 @@
-- [x] Create templates/crop_advisory.html with the provided HTML content
-- [x] Add get_crop_advice function to ml_model/predictor.py
-- [x] Add login_required decorator to app.py
-- [x] Add import for get_crop_advice in app.py
-- [x] Add /crop_advisory route to app.py
-- [x] Update templates/base.html to add AI Advisor link in nav
+- [x] Edit static/css/style.css to add background image for login-page-background and curved box styling for login-card

@@ -15,11 +15,13 @@
                     </div>
 
                     <form method="POST" action="{{ url_for('disease_detection') }}" enctype="multipart/form-data" class="text-center border-bottom pb-4 mb-4">
+                        <!-- THIS IS THE FIX: Added 'me-2' class to the label -->
                         <label for="leaf_image" class="btn btn-success btn-lg me-2">Choose an Image</label>
                         <input type="file" id="leaf_image" name="leaf_image" accept="image/*" required onchange="previewImage(event)" class="d-none">
                         <button type="submit" class="btn btn-warning btn-lg">Detect Disease</button>
                     </form>
 
+                    <!-- Results Section -->
                     {% if prediction_data %}
                         <div class="row">
                             <div class="col-md-5 text-center">
@@ -64,6 +66,12 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- About Us Section -->
+    <div class="detection-about text-center mt-5">
+        <p>About Krishimitra - Your AI-Powered Agricultural Companion</p>
+        <a href="{{ url_for('about') }}" class="btn btn-outline-light">Learn More</a>
     </div>
 </div>
 

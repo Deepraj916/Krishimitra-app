@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import os
+from email_utils import send_report_to_admin
 from datetime import datetime
 import pytz
 from urllib.parse import quote_plus
@@ -413,5 +414,21 @@ def crop_advisory():
             return render_template('crop_advisory.html', user_question=None, ai_answer=None)
     return render_template('crop_advisory.html', user_question=None, ai_answer=None)
 
+@app.route('/contact', methods=['GET', 'POST'])
+def contact_admin():
+    if request.method == 'POST':
+        subject = request.form.get('subject')
+        message = request.form.get('message')
+        user_email = session.get('user_email', 'A visitor') # Get user's email if logged in
+
+        if subject and message:
+            email_sent = send_report_to_admin(subject, message, user_email)
+            if email_sent:
+                flash('Thank you! Your report has been sent to the admin.', 'success')
+            else:
+                flash('Sorry, there was an error sending your report. Please try again later.', 'danger')
+            return redirect(url_for('contact_admin'))
+
+    return render_template('contact_admin.html')
 if __name__ == '__main__':
     app.run(debug=True)

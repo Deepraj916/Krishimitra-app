@@ -50,3 +50,46 @@ def send_otp_email(recipient_email, otp):
     except Exception as e:
         print(f"Failed to send email: {e}")
         return False
+    
+# email_utils.py
+
+def send_report_to_admin(subject, message_body, user_email="Anonymous"):
+    """Sends a user's report to the admin's email."""
+    sender_email = os.getenv("GMAIL_ADDRESS")
+    sender_password = os.getenv("GMAIL_APP_PASSWORD")
+    admin_email = "deeprajabhang@gmail.com" # Your admin email
+
+    if not sender_email or not sender_password:
+        print("ERROR: Gmail credentials not found in .env file.")
+        return False
+
+    # Set up the message
+    message = MIMEMultipart()
+    message["Subject"] = f"Krishimitra Report: {subject}"
+    message["From"] = f"Krishimitra System <{sender_email}>"
+    message["To"] = admin_email
+
+    # Create the body of the email
+    html = f"""
+    <html>
+      <body>
+        <h3>New Report from Krishimitra User</h3>
+        <p><strong>From User:</strong> {user_email}</p>
+        <p><strong>Subject:</strong> {subject}</p>
+        <hr>
+        <p><strong>Message:</strong></p>
+        <p>{message_body.replace('\n', '<br>')}</p>
+      </body>
+    </html>
+    """
+    message.attach(MIMEText(html, "html"))
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, admin_email, message.as_string())
+        print(f"Report email sent successfully to admin.")
+        return True
+    except Exception as e:
+        print(f"Failed to send report email: {e}")
+        return False
