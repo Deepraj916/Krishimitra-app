@@ -199,3 +199,8 @@
     background: url('../images/advisor.jpg') no-repeat center center fixed;
     background-size: cover;
 }
+
+.login-page-background {
+    background: url('../images/report.jpg') no-repeat center center fixed;
+    background-size: cover;
+}
