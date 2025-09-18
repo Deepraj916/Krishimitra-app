@@ -491,6 +491,30 @@ def offer_service():
         return redirect(url_for('find_services'))
     return render_template('offer_service.html')
 # Add this entire function to the bottom of app.py
+# Add this entire function to the bottom of app.py
 
+@app.route('/promote-to-admin', methods=['GET', 'POST'])
+def promote_to_admin():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        secret_key = request.form.get('secret_key')
+
+        # This is a simple password to prevent misuse.
+        if secret_key != "make_me_admin_123":
+            flash('Incorrect secret key.', 'danger')
+            return redirect(url_for('promote_to_admin'))
+
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            user.role = 'admin'
+            db.session.commit()
+            flash(f"SUCCESS: The account for {email} has been promoted to Admin.", 'success')
+        else:
+            flash(f"ERROR: User with email {email} not found. Please register first.", 'danger')
+        
+        return redirect(url_for('promote_to_admin'))
+        
+    return render_template('promote_admin.html')
 if __name__ == '__main__':
     app.run(debug=True)
