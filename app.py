@@ -126,6 +126,8 @@ def admin_required(f):
 
 # app.py
 
+# app.py
+
 def get_market_status():
     """Checks if the agricultural market is likely open based on Indian time."""
     IST = pytz.timezone('Asia/Kolkata')
@@ -289,38 +291,43 @@ def disease_detection():
 
 # app.py
 
+# app.py
+
 @app.route('/prices')
 def market_prices():
-    # Pre-defined lists for the dropdowns
-    markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur"]
-    commodities = ["Tomato", "Onion", "Potato", "Cabbage", "Brinjal", "Ginger(Green)", "Cauliflower"]
+    # Get the current market status and message
+    market_status_message, market_is_open = get_market_status()
 
-    # Get user's filter selections from the URL
+    # Get user's filter selections
     selected_market = request.args.get('market')
     selected_commodity = request.args.get('commodity')
-    # --- NEW PART: Get the date choice ---
-    date_choice = request.args.get('date', 'today') # Default to 'today'
+    date_choice = request.args.get('date', 'today')
 
-    # --- NEW PART: Calculate the correct date string ---
+    # Calculate the correct date string
     if date_choice == 'yesterday':
         target_date = date.today() - timedelta(days=1)
     else:
         target_date = date.today()
+    date_str = target_date.strftime('%Y-%m-%d')
 
-    date_str = target_date.strftime('%Y-%m-%d') # Format as YYYY-MM-DD for the API
-
-    # Fetch the price data using all the selected filters
     price_data = get_market_prices(market=selected_market, commodity=selected_commodity, date_str=date_str)
+
+    # Pre-defined lists for the dropdowns
+    markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur"]
+    commodities = ["Tomato", "Onion", "Potato", "Cabbage", "Brinjal", "Ginger(Green)", "Cauliflower"]
 
     return render_template(
         'market_prices.html', 
         prices=price_data,
+        market_status_message=market_status_message,
+        market_is_open=market_is_open,
         markets=markets,
         commodities=commodities,
         selected_market=selected_market,
         selected_commodity=selected_commodity,
-        date_choice=date_choice # Pass the date choice to the template
+        date_choice=date_choice
     )
+
 
 @app.route('/conversation/start/<int:product_id>')
 @login_required

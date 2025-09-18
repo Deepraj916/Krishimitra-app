@@ -7,22 +7,27 @@
     <p class="lead text-muted">Filter by market, commodity, and date to find the latest data.</p>
 </div>
 
-<!-- START: Date Selection Buttons (Corrected) -->
-<div class="text-center mb-4">
-    <div class="btn-group" role="group">
-        <!-- The endpoint name is now corrected to 'market_prices' -->
-        <a href="{{ url_for('market_prices', market=selected_market, commodity=selected_commodity, date='today') }}" class="btn {% if date_choice == 'today' %}btn-success{% else %}btn-outline-success{% endif %}">
-            Today's Prices
-        </a>
-        <a href="{{ url_for('market_prices', market=selected_market, commodity=selected_commodity, date='yesterday') }}" class="btn {% if date_choice == 'yesterday' %}btn-success{% else %}btn-outline-success{% endif %}">
-            Yesterday's Prices
-        </a>
-    </div>
-</div>
-<!-- END: New Buttons -->
-
+<!-- START: Market Status and Date Selection -->
 <div class="card shadow-sm mb-4">
     <div class="card-body">
+        <!-- Display the live market status message -->
+        {% if market_status_message %}
+            <div class="alert alert-{{ 'success' if market_is_open else 'warning' }} text-center" role="alert">
+                {{ market_status_message }}
+            </div>
+        {% endif %}
+
+        <div class="text-center mb-3">
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('market_prices', market=selected_market, commodity=selected_commodity, date='today') }}" class="btn {% if date_choice == 'today' %}btn-success{% else %}btn-outline-success{% endif %}">
+                    Today's Prices
+                </a>
+                <a href="{{ url_for('market_prices', market=selected_market, commodity=selected_commodity, date='yesterday') }}" class="btn {% if date_choice == 'yesterday' %}btn-success{% else %}btn-outline-success{% endif %}">
+                    Yesterday's Prices
+                </a>
+            </div>
+        </div>
+        
         <form method="GET" class="row g-3 align-items-center">
             <input type="hidden" name="date" value="{{ date_choice }}">
             <div class="col-md-5">
@@ -49,6 +54,7 @@
         </form>
     </div>
 </div>
+<!-- END: Form -->
 
 <div class="card shadow-sm">
     <div class="card-body">
@@ -73,7 +79,7 @@
                     {% else %}
                         <tr>
                             <td colspan="3" class="text-center text-muted">
-                                No price data found for the selected date and filters.
+                               No price data found for the selected date and filters.
                             </td>
                         </tr>
                     {% endif %}
