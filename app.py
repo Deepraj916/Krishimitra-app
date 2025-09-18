@@ -3,12 +3,11 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, inspect
-from datetime import date, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import os
-from datetime import datetime
+from datetime import datetime, date, timedelta
 import pytz
 from urllib.parse import quote_plus
 import random
@@ -52,6 +51,7 @@ class User(db.Model):
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False)
     products = db.relationship('Product', backref='seller_user', lazy=True)
+    services = db.relationship('Service', backref='provider', lazy=True)
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -62,9 +62,18 @@ class Product(db.Model):
     image = db.Column(db.String(100), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
+class Service(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    service_type = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    price_details = db.Column(db.String(200), nullable=False)
+    location = db.Column(db.String(150), nullable=False)
+    provider_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
 class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=True)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=True)
     buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     messages = db.relationship('Message', backref='conversation', lazy=True, cascade="all, delete-orphan")
@@ -124,24 +133,13 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# app.py
-
-# app.py
-
 def get_market_status():
-    """Checks if the agricultural market is likely open based on Indian time."""
     IST = pytz.timezone('Asia/Kolkata')
     now = datetime.now(IST)
+    if now.weekday() == 6: return "Today is a holiday, the market is closed.", False
+    if 10 <= now.hour < 18: return f"Market is currently open. (Current time: {now.strftime('%I:%M %p')})", True
+    else: return f"Market is currently closed (10 AM - 6 PM IST). (Current time: {now.strftime('%I:%M %p')})", False
 
-    # Check for Sunday (weekday() returns 6 for Sunday)
-    if now.weekday() == 6:
-        return "Today is a holiday, the market is closed.", False
-
-    # Check for market hours (e.g., 10 AM to 6 PM)
-    if 10 <= now.hour < 18:
-        return f"Market is currently open. Last updated prices are shown below. (Current time: {now.strftime('%I:%M %p')})", True
-    else:
-        return f"Market is currently closed. Please check back during business hours (10 AM - 6 PM IST). (Current time: {now.strftime('%I:%M %p')})", False
 # --- ROUTES ---
 @app.route('/')
 def home():
@@ -289,21 +287,15 @@ def disease_detection():
             
     return render_template('disease_detection.html', prediction_data=None)
 
-# app.py
-
-# app.py
-
 @app.route('/prices')
 def market_prices():
-    # Get the current market status and message
-    market_status_message, market_is_open = get_market_status()
-
-    # Get user's filter selections
+    markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur"]
+    commodities = ["Tomato", "Onion", "Potato", "Cabbage", "Brinjal", "Ginger(Green)", "Cauliflower"]
+    
     selected_market = request.args.get('market')
     selected_commodity = request.args.get('commodity')
     date_choice = request.args.get('date', 'today')
 
-    # Calculate the correct date string
     if date_choice == 'yesterday':
         target_date = date.today() - timedelta(days=1)
     else:
@@ -311,23 +303,20 @@ def market_prices():
     date_str = target_date.strftime('%Y-%m-%d')
 
     price_data = get_market_prices(market=selected_market, commodity=selected_commodity, date_str=date_str)
-
-    # Pre-defined lists for the dropdowns
-    markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur"]
-    commodities = ["Tomato", "Onion", "Potato", "Cabbage", "Brinjal", "Ginger(Green)", "Cauliflower"]
+    
+    market_status_message, market_is_open = get_market_status()
 
     return render_template(
         'market_prices.html', 
         prices=price_data,
-        market_status_message=market_status_message,
-        market_is_open=market_is_open,
         markets=markets,
         commodities=commodities,
         selected_market=selected_market,
         selected_commodity=selected_commodity,
-        date_choice=date_choice
+        date_choice=date_choice,
+        market_status_message=market_status_message,
+        market_is_open=market_is_open
     )
-
 
 @app.route('/conversation/start/<int:product_id>')
 @login_required
@@ -475,6 +464,32 @@ def contact_admin():
                 flash('Sorry, there was an error sending your report. Please try again later.', 'danger')
             return redirect(url_for('contact_admin'))
     return render_template('contact_admin.html')
+    
+@app.route('/services')
+def find_services():
+    search_location = request.args.get('location', '').lower()
+    query = Service.query
+    if search_location:
+        query = query.filter(Service.location.ilike(f'%{search_location}%'))
+    services = query.order_by(Service.id.desc()).all()
+    return render_template('find_services.html', services=services, search_location=request.args.get('location', ''))
+
+@app.route('/offer_service', methods=['GET', 'POST'])
+@login_required
+def offer_service():
+    if request.method == 'POST':
+        new_service = Service(
+            service_type=request.form['service_type'],
+            description=request.form['description'],
+            price_details=request.form['price_details'],
+            location=request.form['location'],
+            provider_id=session['user_id']
+        )
+        db.session.add(new_service)
+        db.session.commit()
+        flash('Your service has been listed successfully!', 'success')
+        return redirect(url_for('find_services'))
+    return render_template('offer_service.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

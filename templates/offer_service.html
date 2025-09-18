@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Offer a Service{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-lg">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="card-title text-center mb-4">List a New Service</h2>
+                <p class="text-center text-muted mb-4">Offer your skills and equipment to local farmers.</p>
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="service_type" class="form-label">Service Category</label>
+                        <select class="form-select" id="service_type" name="service_type" required>
+                            <option value="" disabled selected>-- Select a Category --</option>
+                            <option value="Tractor & Machinery Work">Tractor & Machinery Work</option>
+                            <option value="Manual Farm Labor">Manual Farm Labor (Groups)</option>
+                            <option value="Spraying Services">Pesticide/Fertilizer Spraying</option>
+                            <option value="General Labor">General Labor</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Service Area</label>
+                        <input type="text" class="form-control" id="location" name="location" placeholder="e.g., Pune, Nashik District, Rahuri Taluka" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="price_details" class="form-label">Rate / Pricing Details</label>
+                        <input type="text" class="form-control" id="price_details" name="price_details" placeholder="e.g., ₹800 per hour, ₹500 per person per day" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description of Service</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Describe the work you do, your experience, and the equipment you have." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 mt-3">List My Service</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

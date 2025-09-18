@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Find Agricultural Services{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="text-center mb-4">
+        <h1 class="display-6 fw-bold">Krishimitra Seva Kendra</h1>
+        <p class="lead text-muted">Find local agricultural services in your area.</p>
+    </div>
+
+    <!-- "Offer Your Service" Button -->
+    <div class="text-center my-4">
+        <a href="{{ url_for('offer_service') }}" class="btn btn-warning btn-lg">+ Offer Your Service</a>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3 align-items-center">
+                <div class="col-md-10">
+                    <label for="location" class="form-label">Search by Location</label>
+                    <input type="search" name="location" id="location" class="form-control" placeholder="Enter village, taluka, or district..." value="{{ search_location or '' }}">
+                </div>
+                <div class="col-md-2 mt-auto">
+                    <button type="submit" class="btn btn-success w-100">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Service Listings -->
+    <div class="row">
+        {% if services %}
+            {% for service in services %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">{{ service.service_type }}</h5>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <p class="card-text">{{ service.description }}</p>
+                            <ul class="list-group list-group-flush mt-auto">
+                                <li class="list-group-item"><strong>Location:</strong> {{ service.location }}</li>
+                                <li class="list-group-item"><strong>Rate:</strong> {{ service.price_details }}</li>
+                                <li class="list-group-item"><strong>Provider:</strong> {{ service.provider.name }}</li>
+                            </ul>
+                            <a href="#" class="btn btn-primary mt-3">Contact Provider</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <p class="text-center text-muted p-4">No services found.{% if search_location %} for "{{ search_location }}"{% endif %}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

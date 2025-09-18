@@ -258,3 +258,60 @@
     height: 250px;
     object-fit: cover;
 }
+
+/* --- Animation Polish --- */
+
+/* Control the speed of the main fade-in animation */
+.animate__fadeIn {
+    animation-duration: 0.8s;
+}
+
+/* Control the speed of the card pop-up animation */
+.animate__fadeInUp {
+    animation-duration: 0.6s;
+}
+
+/* Add a subtle "press down" effect when a button is clicked */
+.btn:active {
+    transform: translateY(2px);
+    transition: transform 0.1s;
+}
+
+/* static/css/style.css - ADD THIS AT THE END */
+
+/* --- Advanced Animations for a Professional Feel --- */
+
+/* 1. Enhanced Hover Effect for Cards */
+/* This targets the homepage feature cards and inbox items */
+.feature-card, .convo-item {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    border: 1px solid transparent; /* Prepare for border color change */
+}
+
+.feature-card:hover, .convo-item:hover {
+    transform: translateY(-5px); /* Lifts the card up slightly */
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1); /* Adds a softer, larger shadow */
+    border-color: #2c5e3f; /* Adds a subtle green border */
+}
+
+/* 2. Smooth Dropdown Menu Animation */
+/* This targets the user dropdown in the navbar */
+.dropdown-menu {
+    /* Use the animations we already have from Animate.css */
+    animation: fadeInDown 0.3s ease-in-out;
+}
+
+/* 3. Interactive Form Field Animation */
+/* This targets all text inputs and textareas */
+.form-control, .form-select {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    /* Make the border a more vibrant green */
+    border-color: #2c5e3f;
+    /* Add a glowing effect */
+    box-shadow: 0 0 0 0.25rem rgba(44, 94, 63, 0.25);
+    /* Remove the default blue outline */
+    outline: none;
+}
