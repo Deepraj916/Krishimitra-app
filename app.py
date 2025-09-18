@@ -15,6 +15,7 @@ from functools import wraps
 import time
 
 # --- Local Module Imports ---
+# Make sure these files exist and are correct
 from ml_model.predictor import predict_disease, get_crop_advice
 from scripts.price_scraper import get_market_prices
 from email_utils import send_report_to_admin, send_otp_email
@@ -42,7 +43,7 @@ app.config['UPLOAD_FOLDER'] = 'static/product_uploads'
 app.config['LEAF_UPLOAD_FOLDER'] = 'static/leaf_uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# --- DATABASE MODELS ---
+# --- DATABASE MODELS (Corrected) ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -78,6 +79,7 @@ class Conversation(db.Model):
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     messages = db.relationship('Message', backref='conversation', lazy=True, cascade="all, delete-orphan")
     product = db.relationship('Product', backref='conversations')
+    service = db.relationship('Service', backref='conversations')
     buyer = db.relationship('User', foreign_keys=[buyer_id])
     seller = db.relationship('User', foreign_keys=[seller_id])
 
@@ -124,9 +126,6 @@ def seller_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash('Please log in to access this page.', 'error')
-            return redirect(url_for('login'))
         if session.get('role') != 'admin':
             flash('You do not have the required permissions to access this page.', 'error')
             return redirect(url_for('home'))
@@ -244,7 +243,8 @@ def delete_product(product_id):
 @login_required
 def dashboard():
     user_products = Product.query.filter_by(seller_id=session['user_id']).order_by(Product.id.desc()).all()
-    return render_template('dashboard.html', products=user_products)
+    user_services = Service.query.filter_by(provider_id=session['user_id']).order_by(Service.id.desc()).all()
+    return render_template('dashboard.html', products=user_products, services=user_services)
 
 @app.route('/detect', methods=['GET', 'POST'])
 def disease_detection():
@@ -252,82 +252,65 @@ def disease_detection():
         if 'leaf_image' not in request.files or request.files['leaf_image'].filename == '':
             flash('No selected file', 'error')
             return redirect(request.url)
-        
         file = request.files['leaf_image']
-        
         if file and allowed_file(file.filename):
             leaf_upload_folder = app.config['LEAF_UPLOAD_FOLDER']
             os.makedirs(leaf_upload_folder, exist_ok=True)
-            
             filename = secure_filename(file.filename)
             leaf_upload_path = os.path.join(leaf_upload_folder, filename)
             file.save(leaf_upload_path)
-            
             prediction_data = predict_disease(leaf_upload_path)
-            
             keyword = prediction_data.get('product_keyword')
             cache_buster = int(time.time())
             suggested_products, amazon_link, flipkart_link = [], None, None
-            
             if keyword:
                 suggested_products = Product.query.filter(or_(Product.name.ilike(f'%{keyword}%'), Product.description.ilike(f'%{keyword}%'))).all()
                 url_safe_keyword = quote_plus(keyword)
                 amazon_link = f"https://www.amazon.in/s?k={url_safe_keyword}"
                 flipkart_link = f"https://www.flipkart.com/search?q={url_safe_keyword}"
-            
-            return render_template(
-                'disease_detection.html', 
-                prediction_data=prediction_data,
-                uploaded_image=filename, 
-                products=suggested_products,
-                amazon_link=amazon_link,
-                flipkart_link=flipkart_link,
-                cache_buster=cache_buster
-            )
-            
+            return render_template('disease_detection.html', prediction_data=prediction_data, uploaded_image=filename, products=suggested_products, amazon_link=amazon_link, flipkart_link=flipkart_link, cache_buster=cache_buster)
     return render_template('disease_detection.html', prediction_data=None)
 
 @app.route('/prices')
 def market_prices():
     markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur"]
     commodities = ["Tomato", "Onion", "Potato", "Cabbage", "Brinjal", "Ginger(Green)", "Cauliflower"]
-    
     selected_market = request.args.get('market')
     selected_commodity = request.args.get('commodity')
     date_choice = request.args.get('date', 'today')
-
     if date_choice == 'yesterday':
         target_date = date.today() - timedelta(days=1)
     else:
         target_date = date.today()
     date_str = target_date.strftime('%Y-%m-%d')
-
     price_data = get_market_prices(market=selected_market, commodity=selected_commodity, date_str=date_str)
-    
     market_status_message, market_is_open = get_market_status()
+    return render_template('market_prices.html', prices=price_data, markets=markets, commodities=commodities, selected_market=selected_market, selected_commodity=selected_commodity, date_choice=date_choice, market_status_message=market_status_message, market_is_open=market_is_open)
 
-    return render_template(
-        'market_prices.html', 
-        prices=price_data,
-        markets=markets,
-        commodities=commodities,
-        selected_market=selected_market,
-        selected_commodity=selected_commodity,
-        date_choice=date_choice,
-        market_status_message=market_status_message,
-        market_is_open=market_is_open
-    )
-
-@app.route('/conversation/start/<int:product_id>')
+@app.route('/conversation/start/product/<int:product_id>')
 @login_required
-def conversation_start(product_id):
+def conversation_start_product(product_id):
     product = Product.query.get_or_404(product_id)
     if product.seller_id == session['user_id']:
         flash('You cannot start a conversation with yourself.', 'error')
         return redirect(url_for('store'))
-    convo = Conversation.query.filter_by(product_id=product.id, buyer_id=session['user_id'], seller_id=product.seller_id).first()
+    convo = Conversation.query.filter_by(product_id=product.id, buyer_id=session['user_id']).first()
     if not convo:
         convo = Conversation(product_id=product.id, buyer_id=session['user_id'], seller_id=product.seller_id)
+        db.session.add(convo)
+        db.session.commit()
+    return redirect(url_for('conversation_chat', convo_id=convo.id))
+
+@app.route('/conversation/start/service/<int:service_id>')
+@login_required
+def conversation_start_service(service_id):
+    service = Service.query.get_or_404(service_id)
+    if service.provider_id == session['user_id']:
+        flash('You cannot start a conversation with yourself.', 'error')
+        return redirect(url_for('find_services'))
+    convo = Conversation.query.filter_by(service_id=service.id, buyer_id=session['user_id']).first()
+    if not convo:
+        convo = Conversation(service_id=service.id, buyer_id=session['user_id'], seller_id=service.provider_id)
         db.session.add(convo)
         db.session.commit()
     return redirect(url_for('conversation_chat', convo_id=convo.id))
