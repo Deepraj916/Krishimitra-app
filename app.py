@@ -490,6 +490,20 @@ def offer_service():
         flash('Your service has been listed successfully!', 'success')
         return redirect(url_for('find_services'))
     return render_template('offer_service.html')
+# Add this entire function to the bottom of app.py
 
+@app.route('/make-admin-now')
+def make_admin():
+    # This is the email we will promote to admin
+    admin_email = "deeprajabhang@gmail.com"
+
+    user = User.query.filter_by(email=admin_email).first()
+    
+    if user:
+        user.role = 'admin'
+        db.session.commit()
+        return "SUCCESS: The account for deeprajabhang@gmail.com has been promoted to Admin."
+    else:
+        return f"ERROR: User with email {admin_email} not found. Please register the account on the website first."
 if __name__ == '__main__':
     app.run(debug=True)
