@@ -2,7 +2,7 @@
 {% block title %}Welcome - Krishimitra{% endblock %}
 
 {% block content %}
-<!-- Hero Section with Background Image -->
+<!-- Hero Section (remains the same) -->
 <div class="hero-section text-center text-white">
     <div class="hero-overlay"></div>
     <div class="hero-content">
@@ -12,43 +12,57 @@
     </div>
 </div>
 
-<!-- Features Section -->
+<!-- Features Section (Updated for Four Items) -->
 <div class="container my-5">
     <h2 class="text-center mb-4">Our Core Features</h2>
+    <!-- THIS IS THE FIX: The grid is now set up for four columns -->
     <div class="row text-center">
         <!-- Agro Store Card -->
-        <div class="col-lg-4 col-md-6 mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
             <div class="card shadow-sm h-100 feature-card">
                 <img src="{{ url_for('static', filename='images/store.jpg') }}" class="card-img-top feature-image" alt="Agro Store">
-                <div class="card-body">
+                <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Agro Store</h5>
-                    <p class="card-text">Buy and sell agricultural products, tools, and seeds from a trusted community.</p>
-                    <a href="{{ url_for('store') }}" class="btn btn-success">Visit Store</a>
+                    <p class="card-text flex-grow-1">Buy and sell agricultural products, tools, and seeds from a trusted community.</p>
+                    <a href="{{ url_for('store') }}" class="btn btn-success mt-auto">Visit Store</a>
                 </div>
             </div>
         </div>
 
+        <!-- START: New Service Center Card -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card shadow-sm h-100 feature-card">
+                <!-- ADD YOUR SERVICES IMAGE HERE -->
+                <img src="{{ url_for('static', filename='images/services.jpg') }}" class="card-img-top feature-image" alt="Agricultural Services">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Seva Kendra</h5>
+                    <p class="card-text flex-grow-1">Find or offer local agricultural services like tractor work, labor, and spraying.</p>
+                    <a href="{{ url_for('find_services') }}" class="btn btn-success mt-auto">Find Services</a>
+                </div>
+            </div>
+        </div>
+        <!-- END: New Card -->
+
         <!-- Disease Detection Card -->
-        <div class="col-lg-4 col-md-6 mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
             <div class="card shadow-sm h-100 feature-card">
                 <img src="{{ url_for('static', filename='images/detection.jpg') }}" class="card-img-top feature-image" alt="Disease Detection">
-                <div class="card-body">
+                <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Disease Detection</h5>
-                    <p class="card-text">Upload a photo of a plant leaf and get an instant AI-powered diagnosis.</p>
-                    <a href="{{ url_for('disease_detection') }}" class="btn btn-success">Detect Disease</a>
+                    <p class="card-text flex-grow-1">Upload a photo of a plant leaf and get an instant AI-powered diagnosis.</p>
+                    <a href="{{ url_for('disease_detection') }}" class="btn btn-success mt-auto">Detect Disease</a>
                 </div>
             </div>
         </div>
 
         <!-- Market Prices Card -->
-        <div class="col-lg-4 col-md-12 mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
             <div class="card shadow-sm h-100 feature-card">
-                <!-- THIS IS THE FIX: Ensure this filename matches your file exactly -->
                 <img src="{{ url_for('static', filename='images/prices.png') }}" class="card-img-top feature-image" alt="Market Prices">
-                <div class="card-body">
+                <div class="card-body d-flex flex-column">
                     <h5 class="card-title">Market Prices</h5>
-                    <p class="card-text">Get live, up-to-date market prices for agricultural commodities in your region.</p>
-                    <a href="{{ url_for('market_prices') }}" class="btn btn-success">Check Prices</a>
+                    <p class="card-text flex-grow-1">Get live, up-to-date market prices for agricultural commodities in your region.</p>
+                    <a href="{{ url_for('market_prices') }}" class="btn btn-success mt-auto">Check Prices</a>
                 </div>
             </div>
         </div>
