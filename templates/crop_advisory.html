@@ -4,10 +4,8 @@
 {% block body_class %}advisor-page-background{% endblock %}
 
 {% block content %}
-<!-- This new wrapper vertically centers the content on the page -->
 <div class="d-flex align-items-center justify-content-center" style="min-height: 85vh;">
     <div class="row justify-content-center w-100">
-        <!-- THIS IS THE FIX: Changed to col-lg-6 to make it a taller rectangle -->
         <div class="col-lg-6 col-md-8">
             <div class="card shadow-sm">
                 <div class="card-body p-4">
@@ -16,12 +14,21 @@
                         <p class="lead text-muted">Your personal agricultural expert. Ask any question about farming, crops, soil, or pests.</p>
                     </div>
                     
-                    <form method="POST">
+                    <form method="POST" id="advisor-form">
                         <div class="mb-3">
                             <label for="user_question" class="form-label fw-bold">Your Question:</label>
-                            <textarea name="user_question" class="form-control" rows="3" placeholder="e.g., What is the best fertilizer for tomatoes in sandy soil?" required></textarea>
+                            <textarea name="user_question" id="user_question" class="form-control" rows="3" placeholder="e.g., What is the best fertilizer for tomatoes in sandy soil?" required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-success w-100">Get Advice</button>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="button" id="mic-btn" class="btn btn-outline-secondary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-mic-fill" viewBox="0 0 16 16">
+                                    <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0V3z"/>
+                                    <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
+                                </svg>
+                                <span id="mic-status">Ask with Voice</span>
+                            </button>
+                            <button type="submit" class="btn btn-success">Get Advice</button>
+                        </div>
                     </form>
 
                     {% if ai_answer %}
@@ -41,4 +48,58 @@
         </div>
     </div>
 </div>
+
+<!-- START: JavaScript with Auto-Submit Feature -->
+<script>
+    const micBtn = document.getElementById('mic-btn');
+    const micStatus = document.getElementById('mic-status');
+    const questionTextarea = document.getElementById('user_question');
+    const advisorForm = document.getElementById('advisor-form'); // Get the form itself
+
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        
+        recognition.continuous = false;
+        recognition.lang = 'en-IN';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        micBtn.addEventListener('click', () => {
+            recognition.start();
+            micStatus.textContent = 'Listening...';
+            micBtn.classList.add('btn-danger');
+        });
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            questionTextarea.value = transcript;
+        };
+
+        recognition.onspeechend = () => {
+            recognition.stop();
+            micStatus.textContent = 'Ask with Voice';
+            micBtn.classList.remove('btn-danger');
+            
+            // --- THIS IS THE FIX ---
+            // If the user said something, automatically submit the form.
+            if (questionTextarea.value) {
+                advisorForm.submit();
+            }
+            // --------------------
+        };
+
+        recognition.onerror = (event) => {
+            micStatus.textContent = 'Error or No Speech';
+            micBtn.classList.remove('btn-danger');
+            console.error('Speech recognition error:', event.error);
+        };
+
+    } else {
+        micBtn.style.display = 'none';
+        console.log('Speech Recognition Not Supported');
+    }
+</script>
+<!-- END: JavaScript -->
+
 {% endblock %}
