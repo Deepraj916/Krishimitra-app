@@ -15,7 +15,6 @@ from functools import wraps
 import time
 
 # --- Local Module Imports ---
-# Make sure these files exist and are correct
 from ml_model.predictor import predict_disease, get_crop_advice
 from scripts.price_scraper import get_market_prices
 from email_utils import send_report_to_admin, send_otp_email
@@ -43,7 +42,7 @@ app.config['UPLOAD_FOLDER'] = 'static/product_uploads'
 app.config['LEAF_UPLOAD_FOLDER'] = 'static/leaf_uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
-# --- DATABASE MODELS (Corrected) ---
+# --- DATABASE MODELS ---
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -271,54 +270,22 @@ def disease_detection():
             return render_template('disease_detection.html', prediction_data=prediction_data, uploaded_image=filename, products=suggested_products, amazon_link=amazon_link, flipkart_link=flipkart_link, cache_buster=cache_buster)
     return render_template('disease_detection.html', prediction_data=None)
 
-
 @app.route('/prices')
 def market_prices():
-    # Pre-defined lists for the dropdowns
-    markets = [
-    "Ahmednagar", "Akola", "Aurangabad", "Baramati", "Dhule", 
-    "Jalgaon", "Kolhapur", "Latur", "Mumbai", "Nagpur", 
-    "Nanded", "Nashik", "Osmanabad", "Pune", "Rahuri", 
-    "Sangamner", "Sangli", "Satara", "Solapur", "Srirampur"
-]
-    commodities = [
-    "Tomato", "Onion", "Potato", "Brinjal", "Cabbage", "Cauliflower", 
-    "Lady's Finger", "Bitter Gourd", "Bottle Gourd", "Cucumber", "Green Chilli",
-    "Garlic", "Ginger(Green)", "Lemon", "Pomegranate", "Banana", "Grapes",
-    "Wheat", "Soya Bean", "Cotton", "Maize"
-]
-    # Get user's filter selections from the URL
+    markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur", "Ahmednagar", "Akola", "Aurangabad", "Baramati", "Dhule", "Jalgaon", "Latur", "Nanded", "Osmanabad", "Rahuri", "Sangamner", "Sangli", "Solapur", "Srirampur"]
+    commodities = ["Tomato", "Onion", "Potato", "Brinjal", "Cabbage", "Cauliflower", "Lady's Finger", "Bitter Gourd", "Bottle Gourd", "Cucumber", "Green Chilli", "Garlic", "Ginger(Green)", "Lemon", "Pomegranate", "Banana", "Grapes", "Wheat", "Soya Bean", "Cotton", "Maize"]
     selected_market = request.args.get('market')
     selected_commodity = request.args.get('commodity')
     date_choice = request.args.get('date', 'today')
-
-    # Calculate the correct date string for the API call
     if date_choice == 'yesterday':
         target_date = date.today() - timedelta(days=1)
     else:
         target_date = date.today()
-    
     date_str = target_date.strftime('%Y-%m-%d')
-
-    # --- THIS IS THE FIX ---
-    # We now fetch the prices every time, regardless of whether the market is open.
     price_data = get_market_prices(market=selected_market, commodity=selected_commodity, date_str=date_str)
-    # --------------------
-    
-    # We still get the status message to inform the user.
     market_status_message, market_is_open = get_market_status()
+    return render_template('market_prices.html', prices=price_data, markets=markets, commodities=commodities, selected_market=selected_market, selected_commodity=selected_commodity, date_choice=date_choice, market_status_message=market_status_message, market_is_open=market_is_open)
 
-    return render_template(
-        'market_prices.html', 
-        prices=price_data,
-        markets=markets,
-        commodities=commodities,
-        selected_market=selected_market,
-        selected_commodity=selected_commodity,
-        date_choice=date_choice,
-        market_status_message=market_status_message,
-        market_is_open=market_is_open
-    )
 @app.route('/conversation/start/product/<int:product_id>')
 @login_required
 def conversation_start_product(product_id):
@@ -360,7 +327,7 @@ def conversation_chat(convo_id):
             msg = Message(conversation_id=convo.id, sender_id=session['user_id'], text=text, timestamp=datetime.utcnow())
             db.session.add(msg)
             db.session.commit()
-        return redirect(url_for('conversation_chat', convo_id=convo_id))
+        return redirect(url_for('conversation_chat', convo_id=convo.id))
     return render_template('conversation.html', conversation=convo)
 
 @app.route('/inbox')
@@ -392,6 +359,7 @@ def delete_user(user_id):
         return redirect(url_for('admin_dashboard'))
     user_to_delete = User.query.get_or_404(user_id)
     Product.query.filter_by(seller_id=user_id).delete()
+    Service.query.filter_by(provider_id=user_id).delete()
     db.session.delete(user_to_delete)
     db.session.commit()
     flash(f"User {user_to_delete.email} has been deleted successfully.", 'success')
@@ -401,12 +369,6 @@ def delete_user(user_id):
 @admin_required
 def admin_delete_product(product_id):
     product_to_delete = Product.query.get_or_404(product_id)
-    try:
-        image_path = os.path.join(app.config['UPLOAD_FOLDER'], product_to_delete.image)
-        if os.path.exists(image_path):
-            os.remove(image_path)
-    except Exception as e:
-        print(f"Error deleting image file: {e}")
     db.session.delete(product_to_delete)
     db.session.commit()
     flash(f"Product '{product_to_delete.name}' has been deleted by an admin.", 'success')
@@ -506,6 +468,6 @@ def offer_service():
         return redirect(url_for('find_services'))
     return render_template('offer_service.html')
 
-
 if __name__ == '__main__':
     app.run(debug=True)
+

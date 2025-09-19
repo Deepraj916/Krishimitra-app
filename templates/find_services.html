@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Find Agricultural Services{% endblock %}
 
+{% block body_class %}services-page-background{% endblock %}
+
 {% block content %}
 <div class="container my-4">
     <div class="text-center mb-4">
@@ -8,12 +10,10 @@
         <p class="lead text-muted">Find local agricultural services in your area.</p>
     </div>
 
-    <!-- "Offer Your Service" Button -->
     <div class="text-center my-4">
         <a href="{{ url_for('offer_service') }}" class="btn btn-warning btn-lg">+ Offer Your Service</a>
     </div>
 
-    <!-- Search Form -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <form method="GET" class="row g-3 align-items-center">
@@ -28,7 +28,6 @@
         </div>
     </div>
 
-    <!-- Service Listings -->
     <div class="row">
         {% if services %}
             {% for service in services %}
@@ -44,14 +43,17 @@
                                 <li class="list-group-item"><strong>Rate:</strong> {{ service.price_details }}</li>
                                 <li class="list-group-item"><strong>Provider:</strong> {{ service.provider.name }}</li>
                             </ul>
-                            <a href="#" class="btn btn-primary mt-3">Contact Provider</a>
+                            <!-- THIS IS THE FIX: The link now points to the correct function -->
+                            <a href="{{ url_for('conversation_start_service', service_id=service.id) }}" class="btn btn-primary mt-3">Contact Provider</a>
                         </div>
                     </div>
                 </div>
             {% endfor %}
         {% else %}
             <div class="col-12">
-                <p class="text-center text-muted p-4">No services found.{% if search_location %} for "{{ search_location }}"{% endif %}</p>
+                <div class="alert alert-info text-center">
+                    No services found.{% if search_location %} for "{{ search_location }}"{% endif %}
+                </div>
             </div>
         {% endif %}
     </div>
