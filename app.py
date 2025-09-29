@@ -269,32 +269,51 @@ def dashboard():
     user_services = Service.query.filter_by(provider_id=session['user_id']).order_by(Service.id.desc()).all()
     return render_template('dashboard.html', products=user_products, services=user_services)
 
+# In app.py - Replace the old /detect route with this one
+
 @app.route('/detect', methods=['GET', 'POST'])
 def disease_detection():
     if request.method == 'POST':
         if 'leaf_image' not in request.files or request.files['leaf_image'].filename == '':
             flash('No selected file', 'error')
             return redirect(request.url)
+        
         file = request.files['leaf_image']
+        
         if file and allowed_file(file.filename):
+            # Use the dedicated folder config variable for reliability
             leaf_upload_folder = app.config['LEAF_UPLOAD_FOLDER']
+            # Ensure the directory exists on the server before saving
             os.makedirs(leaf_upload_folder, exist_ok=True)
+            
             filename = secure_filename(file.filename)
             leaf_upload_path = os.path.join(leaf_upload_folder, filename)
             file.save(leaf_upload_path)
+            
+            # Now, we are certain the file exists at this path before sending it to the AI
             prediction_data = predict_disease(leaf_upload_path)
+            
             keyword = prediction_data.get('product_keyword')
             cache_buster = int(time.time())
             suggested_products, amazon_link, flipkart_link = [], None, None
+            
             if keyword:
                 suggested_products = Product.query.filter(or_(Product.name.ilike(f'%{keyword}%'), Product.description.ilike(f'%{keyword}%'))).all()
                 url_safe_keyword = quote_plus(keyword)
                 amazon_link = f"https://www.amazon.in/s?k={url_safe_keyword}"
                 flipkart_link = f"https://www.flipkart.com/search?q={url_safe_keyword}"
-            return render_template('disease_detection.html', prediction_data=prediction_data, uploaded_image=filename, products=suggested_products, amazon_link=amazon_link, flipkart_link=flipkart_link, cache_buster=cache_buster)
+            
+            return render_template(
+                'disease_detection.html', 
+                prediction_data=prediction_data,
+                uploaded_image=filename, 
+                products=suggested_products,
+                amazon_link=amazon_link,
+                flipkart_link=flipkart_link,
+                cache_buster=cache_buster
+            )
+            
     return render_template('disease_detection.html', prediction_data=None)
-
-# app.py
 
 @app.route('/prices')
 def market_prices():
