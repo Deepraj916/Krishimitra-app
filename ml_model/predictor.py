@@ -12,9 +12,11 @@ if not api_key:
     raise ValueError("GEMINI_API_KEY not found in .env file.")
 genai.configure(api_key=api_key)
 
-# Initialize the models with the latest stable versions
-vision_model = genai.GenerativeModel('gemini-1.5-flash-latest')
-text_model = genai.GenerativeModel('gemini-1.5-flash-latest')
+# --- THIS IS THE FIX ---
+# Initialize the correct models with their standard, long-term stable names
+vision_model = genai.GenerativeModel('gemini-pro-vision')
+text_model = genai.GenerativeModel('gemini-pro')
+# --------------------
 
 def predict_disease(image_path):
     """
@@ -40,25 +42,18 @@ def predict_disease(image_path):
         
         response = vision_model.generate_content(prompt)
 
-        # --- THIS IS THE NEW, CRITICAL FIX ---
-        # Check if the AI blocked the request due to safety filters
         if response.prompt_feedback.block_reason:
             print(f"AI blocked the image. Reason: {response.prompt_feedback.block_reason}")
             return {
-                "plant_name": "N/A",
-                "disease_name": "Image Blocked by AI",
-                "remedy_description": "The uploaded image was blocked by the AI's safety filters. This can happen with blurry, low-quality, or unusual images. Please try again with a clearer picture of the plant.",
-                "product_keyword": None
+                "plant_name": "N/A", "disease_name": "Image Blocked by AI",
+                "remedy_description": "The uploaded image was blocked by the AI's safety filters. This can happen with blurry or unusual images. Please try again with a clearer picture.", "product_keyword": None
             }
         
-        # Check if the AI returned an empty response
         if not response.text:
             print("AI returned an empty response.")
             return {
-                "plant_name": "N/A",
-                "disease_name": "Analysis Failed",
-                "remedy_description": "The AI was unable to analyze this image. Please try again with a different or clearer picture.",
-                "product_keyword": None
+                "plant_name": "N/A", "disease_name": "Analysis Failed",
+                "remedy_description": "The AI was unable to analyze this image. Please try again with a clearer picture.", "product_keyword": None
             }
 
         response_text = response.text.strip().replace('```json', '').replace('```', '')
@@ -67,10 +62,8 @@ def predict_disease(image_path):
     except Exception as e:
         print(f"An error occurred during prediction: {e}")
         return {
-            "plant_name": "N/A",
-            "disease_name": "Prediction Error",
-            "remedy_description": "A technical error occurred while trying to get a prediction. Please try again.",
-            "product_keyword": None
+            "plant_name": "N/A", "disease_name": "Prediction Error",
+            "remedy_description": "A technical error occurred while trying to get a prediction. Please try again.", "product_keyword": None
         }
 
 def get_crop_advice(question):
