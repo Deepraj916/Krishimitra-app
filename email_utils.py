@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def send_otp_email(recipient_email, otp):
-    """Sends an OTP email using Gmail."""
+    """Sends an OTP email using Gmail with a specified timeout."""
     sender_email = os.getenv("GMAIL_ADDRESS")
     sender_password = os.getenv("GMAIL_APP_PASSWORD")
 
@@ -32,9 +32,13 @@ def send_otp_email(recipient_email, otp):
     message.attach(MIMEText(html, "html"))
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, recipient_email, message.as_string())
+        # Use SMTP, not SMTP_SSL, which allows for a different connection flow
+        # and specify a 20-second timeout.
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=20)
+        server.starttls() # Secure the connection
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipient_email, message.as_string())
+        server.quit()
         print(f"OTP email sent successfully to {recipient_email}")
         return True
     except Exception as e:
@@ -42,7 +46,7 @@ def send_otp_email(recipient_email, otp):
         return False
 
 def send_report_to_admin(subject, message_body, user_email="Anonymous"):
-    """Sends a report email to the admin using Gmail."""
+    """Sends a report email to the admin using Gmail with a specified timeout."""
     sender_email = os.getenv("GMAIL_ADDRESS")
     sender_password = os.getenv("GMAIL_APP_PASSWORD")
     admin_email = "deeprajabhang@gmail.com"
@@ -68,9 +72,11 @@ def send_report_to_admin(subject, message_body, user_email="Anonymous"):
     message.attach(MIMEText(html, "html"))
 
     try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender_email, sender_password)
-            server.sendmail(sender_email, admin_email, message.as_string())
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=20)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, admin_email, message.as_string())
+        server.quit()
         print(f"Report email sent successfully to admin.")
         return True
     except Exception as e:
