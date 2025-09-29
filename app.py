@@ -1,4 +1,4 @@
-# app.py - FINAL, STABLE DATABASE VERSION
+# app.py - FINAL, STABLE VERSION (Simulated OTP)
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
@@ -13,16 +13,24 @@ from urllib.parse import quote_plus
 import random
 from functools import wraps
 import time
+import cloudinary
+import cloudinary.uploader
 
 # --- Local Module Imports ---
 from ml_model.predictor import predict_disease, get_crop_advice
 from scripts.price_scraper import get_market_prices
-from email_utils import send_report_to_admin, send_otp_email
 
 # --- Initial Setup ---
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = 'your_super_secret_key'
+
+# --- Cloudinary Configuration ---
+cloudinary.config(
+    cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key = os.getenv('CLOUDINARY_API_KEY'),
+    api_secret = os.getenv('CLOUDINARY_API_SECRET')
+)
 
 # --- Database Configuration ---
 db_url = os.getenv('DATABASE_URL')
@@ -38,8 +46,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # --- Configuration ---
-app.config['UPLOAD_FOLDER'] = 'static/product_uploads'
-# --- THIS IS A NEW, MORE ROBUST WAY TO HANDLE THE LEAF UPLOAD FOLDER ---
 app.config['LEAF_UPLOAD_FOLDER'] = 'static/leaf_uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -60,7 +66,7 @@ class Product(db.Model):
     category = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.String(50), nullable=False)
-    image = db.Column(db.String(100), nullable=False)
+    image = db.Column(db.String(255), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class Service(db.Model):
@@ -196,14 +202,14 @@ def store():
 @seller_required
 def add_product():
     if request.method == 'POST':
-        file = request.files['image']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            new_product = Product(name=request.form['name'], category=request.form['category'], description=request.form['description'], price=request.form['price'], image=filename, seller_id=session['user_id'])
+        file_to_upload = request.files.get('image')
+        if file_to_upload:
+            upload_result = cloudinary.uploader.upload(file_to_upload)
+            image_url = upload_result['secure_url']
+            new_product = Product(name=request.form['name'], category=request.form['category'], description=request.form['description'], price=request.form['price'], image=image_url, seller_id=session['user_id'])
             db.session.add(new_product)
             db.session.commit()
-            flash('Your product has been listed!', 'success')
+            flash('Your product has been listed successfully!', 'success')
             return redirect(url_for('dashboard'))
     return render_template('add_product.html')
 
@@ -216,17 +222,15 @@ def edit_product(product_id):
         return redirect(url_for('dashboard'))
     if request.method == 'POST':
         product.name, product.category, product.description, product.price = request.form['name'], request.form['category'], request.form['description'], request.form['price']
-        file = request.files.get('image')
-        if file and file.filename != '':
-            if allowed_file(file.filename):
-                filename = secure_filename(file.filename)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                product.image = filename
+        file_to_upload = request.files.get('image')
+        if file_to_upload and file_to_upload.filename != '':
+            upload_result = cloudinary.uploader.upload(file_to_upload)
+            product.image = upload_result['secure_url']
         db.session.commit()
         flash('Your product has been updated successfully!', 'success')
         return redirect(url_for('dashboard'))
     return render_template('edit_product.html', product=product)
-    
+
 @app.route('/delete_product/<int:product_id>', methods=['POST'])
 @seller_required
 def delete_product(product_id):
@@ -246,49 +250,29 @@ def dashboard():
     user_services = Service.query.filter_by(provider_id=session['user_id']).order_by(Service.id.desc()).all()
     return render_template('dashboard.html', products=user_products, services=user_services)
 
-# --- THIS IS THE FINAL, CORRECTED DISEASE DETECTION ROUTE ---
 @app.route('/detect', methods=['GET', 'POST'])
 def disease_detection():
     if request.method == 'POST':
         if 'leaf_image' not in request.files or request.files['leaf_image'].filename == '':
             flash('No selected file', 'error')
             return redirect(request.url)
-        
         file = request.files['leaf_image']
-        
         if file and allowed_file(file.filename):
-            # Use the dedicated folder config variable for reliability
             leaf_upload_folder = app.config['LEAF_UPLOAD_FOLDER']
-            # Ensure the directory exists on the server before saving
             os.makedirs(leaf_upload_folder, exist_ok=True)
-            
             filename = secure_filename(file.filename)
             leaf_upload_path = os.path.join(leaf_upload_folder, filename)
             file.save(leaf_upload_path)
-            
-            # Now, we are certain the file exists at this path before sending it to the AI
             prediction_data = predict_disease(leaf_upload_path)
-            
             keyword = prediction_data.get('product_keyword')
             cache_buster = int(time.time())
             suggested_products, amazon_link, flipkart_link = [], None, None
-            
             if keyword:
                 suggested_products = Product.query.filter(or_(Product.name.ilike(f'%{keyword}%'), Product.description.ilike(f'%{keyword}%'))).all()
                 url_safe_keyword = quote_plus(keyword)
                 amazon_link = f"https://www.amazon.in/s?k={url_safe_keyword}"
                 flipkart_link = f"https://www.flipkart.com/search?q={url_safe_keyword}"
-            
-            return render_template(
-                'disease_detection.html', 
-                prediction_data=prediction_data,
-                uploaded_image=filename, 
-                products=suggested_products,
-                amazon_link=amazon_link,
-                flipkart_link=flipkart_link,
-                cache_buster=cache_buster
-            )
-            
+            return render_template('disease_detection.html', prediction_data=prediction_data, uploaded_image=filename, products=suggested_products, amazon_link=amazon_link, flipkart_link=flipkart_link, cache_buster=cache_buster)
     return render_template('disease_detection.html', prediction_data=None)
 
 @app.route('/prices')
@@ -395,6 +379,7 @@ def admin_delete_product(product_id):
     flash(f"Product '{product_to_delete.name}' has been deleted by an admin.", 'success')
     return redirect(request.referrer or url_for('store'))
     
+# --- FINAL, WORKING PASSWORD RESET (Simulated OTP) ---
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -404,12 +389,8 @@ def forgot_password():
             otp = str(random.randint(100000, 999999))
             session['reset_otp'] = otp
             session['reset_user'] = user.email
-            email_sent = send_otp_email(user.email, otp)
-            if email_sent:
-                flash(f"An OTP has been sent to your email: {user.email}. Please check your inbox.", 'info')
-                return redirect(url_for('verify_otp'))
-            else:
-                flash('Could not send OTP email. Please ensure admin credentials are correct.', 'error')
+            flash(f"For demonstration, your OTP is: {otp}", 'info')
+            return redirect(url_for('verify_otp'))
         else:
             flash('This email address is not registered.', 'error')
     return render_template('forgot_password.html')
@@ -448,21 +429,11 @@ def crop_advisory():
             return render_template('crop_advisory.html', user_question=user_question, ai_answer=ai_answer)
     return render_template('crop_advisory.html', user_question=None, ai_answer=None)
 
-@app.route('/contact', methods=['GET', 'POST'])
+# --- FINAL, WORKING CONTACT PAGE (mailto link) ---
+@app.route('/contact')
 def contact_admin():
-    if request.method == 'POST':
-        subject = request.form.get('subject')
-        message = request.form.get('message')
-        user_email = session.get('user_email', 'A visitor')
-        if subject and message:
-            email_sent = send_report_to_admin(subject, message, user_email)
-            if email_sent:
-                flash('Thank you! Your report has been sent to the admin.', 'success')
-            else:
-                flash('Sorry, there was an error sending your report. Please try again later.', 'danger')
-            return redirect(url_for('contact_admin'))
     return render_template('contact_admin.html')
-    
+
 @app.route('/services')
 def find_services():
     search_location = request.args.get('location', '').lower()
