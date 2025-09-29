@@ -14,8 +14,8 @@ genai.configure(api_key=api_key)
 
 # --- THIS IS THE FIX ---
 # Initialize the correct models with their current, stable names
-vision_model = genai.GenerativeModel('gemini-pro-vision')
-text_model = genai.GenerativeModel('gemini-pro')
+vision_model = genai.GenerativeModel('gemini-1.5-flash-latest')
+text_model = genai.GenerativeModel('gemini-1.5-flash-latest')
 # --------------------
 
 def predict_disease(image_path):
