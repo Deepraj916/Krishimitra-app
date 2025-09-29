@@ -294,21 +294,56 @@ def disease_detection():
             return render_template('disease_detection.html', prediction_data=prediction_data, uploaded_image=filename, products=suggested_products, amazon_link=amazon_link, flipkart_link=flipkart_link, cache_buster=cache_buster)
     return render_template('disease_detection.html', prediction_data=None)
 
+# app.py
+
 @app.route('/prices')
 def market_prices():
-    markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur", "Ahmednagar", "Akola", "Aurangabad", "Baramati", "Dhule", "Jalgaon", "Latur", "Nanded", "Osmanabad", "Rahuri", "Sangamner", "Sangli", "Solapur", "Srirampur"]
-    commodities = ["Tomato", "Onion", "Potato", "Brinjal", "Cabbage", "Cauliflower", "Lady's Finger", "Bitter Gourd", "Bottle Gourd", "Cucumber", "Green Chilli", "Garlic", "Ginger(Green)", "Lemon", "Pomegranate", "Banana", "Grapes", "Wheat", "Soya Bean", "Cotton", "Maize"]
+    # Pre-defined lists for the dropdowns
+    markets = [
+        "Ahmednagar", "Akola", "Aurangabad", "Baramati", "Dhule", 
+        "Jalgaon", "Kolhapur", "Latur", "Mumbai", "Nagpur", 
+        "Nanded", "Nashik", "Osmanabad", "Pune", "Rahuri", 
+        "Sangamner", "Sangli", "Satara", "Solapur", "Srirampur"
+    ]
+    commodities = [
+        "Tomato", "Onion", "Potato", "Brinjal", "Cabbage", "Cauliflower", 
+        "Lady's Finger", "Bitter Gourd", "Bottle Gourd", "Cucumber", "Green Chilli",
+        "Garlic", "Ginger(Green)", "Lemon", "Pomegranate", "Banana", "Grapes",
+        "Wheat", "Soya Bean", "Cotton", "Maize"
+    ]
+    
+    # Get user's filter selections from the URL
     selected_market = request.args.get('market')
     selected_commodity = request.args.get('commodity')
     date_choice = request.args.get('date', 'today')
+
+    # Calculate the correct date string for the API call
     if date_choice == 'yesterday':
         target_date = date.today() - timedelta(days=1)
     else:
         target_date = date.today()
+    
     date_str = target_date.strftime('%Y-%m-%d')
+
+    # --- THIS IS THE FIX ---
+    # We now fetch the prices every time, regardless of whether the market is open.
     price_data = get_market_prices(market=selected_market, commodity=selected_commodity, date_str=date_str)
+    # --------------------
+    
+    # We still get the status message to inform the user.
     market_status_message, market_is_open = get_market_status()
-    return render_template('market_prices.html', prices=price_data, markets=markets, commodities=commodities, selected_market=selected_market, selected_commodity=selected_commodity, date_choice=date_choice, market_status_message=market_status_message, market_is_open=market_is_open)
+
+    return render_template(
+        'market_prices.html', 
+        prices=price_data,
+        markets=markets,
+        commodities=commodities,
+        selected_market=selected_market,
+        selected_commodity=selected_commodity,
+        date_choice=date_choice,
+        market_status_message=market_status_message,
+        market_is_open=market_is_open
+    )
 
 @app.route('/conversation/start/product/<int:product_id>')
 @login_required

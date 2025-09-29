@@ -12,9 +12,11 @@ if not api_key:
     raise ValueError("GEMINI_API_KEY not found in .env file.")
 genai.configure(api_key=api_key)
 
-# Initialize the Gemini models
-vision_model = genai.GenerativeModel('gemini-1.5-flash-latest')
-text_model = genai.GenerativeModel('gemini-1.5-flash-latest')
+# --- THIS IS THE FIX ---
+# Initialize the correct models with their current, stable names
+vision_model = genai.GenerativeModel('gemini-pro-vision')
+text_model = genai.GenerativeModel('gemini-pro')
+# --------------------
 
 def predict_disease(image_path):
     """
@@ -40,7 +42,6 @@ def predict_disease(image_path):
         
         response = vision_model.generate_content(prompt)
 
-        # Robust error handling for silent failures
         if response.prompt_feedback.block_reason:
             print(f"AI blocked the image. Reason: {response.prompt_feedback.block_reason}")
             return {
