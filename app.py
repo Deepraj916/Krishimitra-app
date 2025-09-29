@@ -1,4 +1,4 @@
-# app.py - FINAL, STABLE VERSION with Cloudinary
+# app.py - FINAL, STABLE DATABASE VERSION
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
@@ -13,8 +13,6 @@ from urllib.parse import quote_plus
 import random
 from functools import wraps
 import time
-import cloudinary
-import cloudinary.uploader
 
 # --- Local Module Imports ---
 from ml_model.predictor import predict_disease, get_crop_advice
@@ -25,13 +23,6 @@ from email_utils import send_report_to_admin, send_otp_email
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = 'your_super_secret_key'
-
-# --- Cloudinary Configuration ---
-cloudinary.config(
-    cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME'),
-    api_key = os.getenv('CLOUDINARY_API_KEY'),
-    api_secret = os.getenv('CLOUDINARY_API_SECRET')
-)
 
 # --- Database Configuration ---
 db_url = os.getenv('DATABASE_URL')
@@ -47,11 +38,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # --- Configuration ---
-app.config['LEAF_UPLOAD_FOLDER'] = 'static/leaf_uploads' # Still needed for temporary disease detection images
+app.config['UPLOAD_FOLDER'] = 'static/product_uploads'
+# --- THIS IS A NEW, MORE ROBUST WAY TO HANDLE THE LEAF UPLOAD FOLDER ---
+app.config['LEAF_UPLOAD_FOLDER'] = 'static/leaf_uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 # --- DATABASE MODELS ---
-# ... (Your database models like User, Product, etc. remain here) ...
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -68,8 +60,16 @@ class Product(db.Model):
     category = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.String(50), nullable=False)
-    image = db.Column(db.String(255), nullable=False) # Increased length for URL
+    image = db.Column(db.String(100), nullable=False)
     seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class Service(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    service_type = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    price_details = db.Column(db.String(200), nullable=False)
+    location = db.Column(db.String(150), nullable=False)
+    provider_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
 class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -91,14 +91,6 @@ class Message(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     sender = db.relationship('User', foreign_keys=[sender_id])
 
-class Service(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    service_type = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    price_details = db.Column(db.String(200), nullable=False)
-    location = db.Column(db.String(150), nullable=False)
-    provider_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
 # --- This block runs ONCE when the app starts up ---
 with app.app_context():
     inspector = inspect(db.engine)
@@ -110,7 +102,6 @@ with app.app_context():
         print("Database tables already exist.")
 
 # --- Helper Functions and Decorators ---
-# ... (all your helpers like allowed_file, login_required, etc. go here) ...
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -201,31 +192,21 @@ def store():
         flipkart_link = f"https://www.flipkart.com/search?q={url_safe_keyword}"
     return render_template('store.html', products=products, active_category=category, search_query=search_term, amazon_link=amazon_link, flipkart_link=flipkart_link)
 
-# --- THIS IS THE UPDATED add_product FUNCTION ---
 @app.route('/add_product', methods=['GET', 'POST'])
 @seller_required
 def add_product():
     if request.method == 'POST':
-        file_to_upload = request.files.get('image')
-        if file_to_upload:
-            upload_result = cloudinary.uploader.upload(file_to_upload)
-            image_url = upload_result['secure_url']
-            
-            new_product = Product(
-                name=request.form['name'], 
-                category=request.form['category'], 
-                description=request.form['description'], 
-                price=request.form['price'], 
-                image=image_url,
-                seller_id=session['user_id']
-            )
+        file = request.files['image']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            new_product = Product(name=request.form['name'], category=request.form['category'], description=request.form['description'], price=request.form['price'], image=filename, seller_id=session['user_id'])
             db.session.add(new_product)
             db.session.commit()
-            flash('Your product has been listed successfully!', 'success')
+            flash('Your product has been listed!', 'success')
             return redirect(url_for('dashboard'))
     return render_template('add_product.html')
 
-# --- THIS IS THE UPDATED edit_product FUNCTION ---
 @app.route('/edit_product/<int:product_id>', methods=['GET', 'POST'])
 @seller_required
 def edit_product(product_id):
@@ -234,22 +215,18 @@ def edit_product(product_id):
         flash('You are not authorized to edit this product.', 'error')
         return redirect(url_for('dashboard'))
     if request.method == 'POST':
-        product.name = request.form['name']
-        product.category = request.form['category']
-        product.description = request.form['description']
-        product.price = request.form['price']
-        
-        file_to_upload = request.files.get('image')
-        if file_to_upload and file_to_upload.filename != '':
-            upload_result = cloudinary.uploader.upload(file_to_upload)
-            product.image = upload_result['secure_url']
-        
+        product.name, product.category, product.description, product.price = request.form['name'], request.form['category'], request.form['description'], request.form['price']
+        file = request.files.get('image')
+        if file and file.filename != '':
+            if allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                product.image = filename
         db.session.commit()
         flash('Your product has been updated successfully!', 'success')
         return redirect(url_for('dashboard'))
     return render_template('edit_product.html', product=product)
-
-# ... (All other routes like /delete_product, /dashboard, /detect, etc. remain here) ...
+    
 @app.route('/delete_product/<int:product_id>', methods=['POST'])
 @seller_required
 def delete_product(product_id):
@@ -269,8 +246,7 @@ def dashboard():
     user_services = Service.query.filter_by(provider_id=session['user_id']).order_by(Service.id.desc()).all()
     return render_template('dashboard.html', products=user_products, services=user_services)
 
-# In app.py - Replace the old /detect route with this one
-
+# --- THIS IS THE FINAL, CORRECTED DISEASE DETECTION ROUTE ---
 @app.route('/detect', methods=['GET', 'POST'])
 def disease_detection():
     if request.method == 'POST':
@@ -317,52 +293,19 @@ def disease_detection():
 
 @app.route('/prices')
 def market_prices():
-    # Pre-defined lists for the dropdowns
-    markets = [
-        "Ahmednagar", "Akola", "Aurangabad", "Baramati", "Dhule", 
-        "Jalgaon", "Kolhapur", "Latur", "Mumbai", "Nagpur", 
-        "Nanded", "Nashik", "Osmanabad", "Pune", "Rahuri", 
-        "Sangamner", "Sangli", "Satara", "Solapur", "Srirampur"
-    ]
-    commodities = [
-        "Tomato", "Onion", "Potato", "Brinjal", "Cabbage", "Cauliflower", 
-        "Lady's Finger", "Bitter Gourd", "Bottle Gourd", "Cucumber", "Green Chilli",
-        "Garlic", "Ginger(Green)", "Lemon", "Pomegranate", "Banana", "Grapes",
-        "Wheat", "Soya Bean", "Cotton", "Maize"
-    ]
-    
-    # Get user's filter selections from the URL
+    markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur", "Ahmednagar", "Akola", "Aurangabad", "Baramati", "Dhule", "Jalgaon", "Latur", "Nanded", "Osmanabad", "Rahuri", "Sangamner", "Sangli", "Solapur", "Srirampur"]
+    commodities = ["Tomato", "Onion", "Potato", "Brinjal", "Cabbage", "Cauliflower", "Lady's Finger", "Bitter Gourd", "Bottle Gourd", "Cucumber", "Green Chilli", "Garlic", "Ginger(Green)", "Lemon", "Pomegranate", "Banana", "Grapes", "Wheat", "Soya Bean", "Cotton", "Maize"]
     selected_market = request.args.get('market')
     selected_commodity = request.args.get('commodity')
     date_choice = request.args.get('date', 'today')
-
-    # Calculate the correct date string for the API call
     if date_choice == 'yesterday':
         target_date = date.today() - timedelta(days=1)
     else:
         target_date = date.today()
-    
     date_str = target_date.strftime('%Y-%m-%d')
-
-    # --- THIS IS THE FIX ---
-    # We now fetch the prices every time, regardless of whether the market is open.
     price_data = get_market_prices(market=selected_market, commodity=selected_commodity, date_str=date_str)
-    # --------------------
-    
-    # We still get the status message to inform the user.
     market_status_message, market_is_open = get_market_status()
-
-    return render_template(
-        'market_prices.html', 
-        prices=price_data,
-        markets=markets,
-        commodities=commodities,
-        selected_market=selected_market,
-        selected_commodity=selected_commodity,
-        date_choice=date_choice,
-        market_status_message=market_status_message,
-        market_is_open=market_is_open
-    )
+    return render_template('market_prices.html', prices=price_data, markets=markets, commodities=commodities, selected_market=selected_market, selected_commodity=selected_commodity, date_choice=date_choice, market_status_message=market_status_message, market_is_open=market_is_open)
 
 @app.route('/conversation/start/product/<int:product_id>')
 @login_required
@@ -405,7 +348,7 @@ def conversation_chat(convo_id):
             msg = Message(conversation_id=convo.id, sender_id=session['user_id'], text=text, timestamp=datetime.utcnow())
             db.session.add(msg)
             db.session.commit()
-        return redirect(url_for('conversation_chat', convo_id=convo_id))
+        return redirect(url_for('conversation_chat', convo_id=convo.id))
     return render_template('conversation.html', conversation=convo)
 
 @app.route('/inbox')
