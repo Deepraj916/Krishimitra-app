@@ -1,2 +1,3 @@
-- [x] Edit templates/store.html: Change src in <img> tag from {{ url_for('static', filename='product_uploads/' + product.image) }} to {{ product.image }}
-- [x] Edit templates/dashboard.html: Change src in <img> tag from {{ url_for('static', filename='product_uploads/' + product.image) }} to {{ product.image }}
+- [x] Add Bootstrap Icons CSS link to templates/base.html
+- [x] Modify templates/inbox.html to include a refresh button in the card header with icon and onclick reload
+- [ ] Test the refresh functionality
