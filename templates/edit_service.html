@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Edit Service{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-lg">
+            <div class="card-body p-4 p-md-5">
+                <h2 class="card-title text-center mb-4">Edit Your Service Listing</h2>
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="service_type" class="form-label">Service Category</label>
+                        <select class="form-select" id="service_type" name="service_type" required>
+                            <option value="Tractor & Machinery Work" {% if service.service_type == 'Tractor & Machinery Work' %}selected{% endif %}>Tractor & Machinery Work</option>
+                            <option value="Manual Farm Labor" {% if service.service_type == 'Manual Farm Labor' %}selected{% endif %}>Manual Farm Labor (Groups)</option>
+                            <option value="Spraying Services" {% if service.service_type == 'Spraying Services' %}selected{% endif %}>Pesticide/Fertilizer Spraying</option>
+                            <option value="General Labor" {% if service.service_type == 'General Labor' %}selected{% endif %}>General Labor</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Service Area</label>
+                        <input type="text" class="form-control" id="location" name="location" value="{{ service.location }}" placeholder="e.g., Pune, Nashik District, Rahuri Taluka" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="price_details" class="form-label">Rate / Pricing Details</label>
+                        <input type="text" class="form-control" id="price_details" name="price_details" value="{{ service.price_details }}" placeholder="e.g., ₹800 per hour, ₹500 per person per day" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description of Service</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required>{{ service.description }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 mt-3">Save Changes</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

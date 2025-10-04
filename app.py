@@ -243,6 +243,35 @@ def delete_product(product_id):
     flash('Product has been deleted successfully.', 'success')
     return redirect(url_for('store'))
 
+@app.route('/edit_service/<int:service_id>', methods=['GET', 'POST'])
+@login_required
+def edit_service(service_id):
+    service = Service.query.get_or_404(service_id)
+    if service.provider_id != session.get('user_id'):
+        flash('You are not authorized to edit this service.', 'error')
+        return redirect(url_for('dashboard'))
+    if request.method == 'POST':
+        service.service_type = request.form['service_type']
+        service.description = request.form['description']
+        service.price_details = request.form['price_details']
+        service.location = request.form['location']
+        db.session.commit()
+        flash('Your service has been updated successfully!', 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('edit_service.html', service=service)
+
+@app.route('/delete_service/<int:service_id>', methods=['POST'])
+@login_required
+def delete_service(service_id):
+    service = Service.query.get_or_404(service_id)
+    if service.provider_id != session.get('user_id'):
+        flash('You are not authorized to delete this service.', 'error')
+        return redirect(url_for('find_services'))
+    db.session.delete(service)
+    db.session.commit()
+    flash('Service has been deleted successfully.', 'success')
+    return redirect(url_for('find_services'))
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
