@@ -46,6 +46,13 @@
                                         {% endif %}
                                     </li>
                                 </ul>
+                                {% if prediction_data.fertilizer_name and prediction_data.fertilizer_name != 'null' %}
+                                    <h5 class="mt-4">Recommended Fertilizer</h5>
+                                    <p><strong>Fertilizer:</strong> {{ prediction_data.fertilizer_name }}</p>
+                                    {% if prediction_data.quantity_for_10_liters and prediction_data.quantity_for_10_liters != 'null' %}
+                                        <p><strong>Minimum Quantity for 10 Liters:</strong> {{ prediction_data.quantity_for_10_liters }}</p>
+                                    {% endif %}
+                                {% endif %}
                                 <h5 class="mt-4">Suggested Remedy</h5>
                                 <p>{{ prediction_data.remedy_description }}</p>
                                 {% if prediction_data.product_keyword %}

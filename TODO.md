@@ -1,6 +1,3 @@
-# TODO: Add Edit and Remove for Services
-
-- [x] Add edit_service/<int:service_id> route (GET/POST) in app.py
-- [x] Add delete_service/<int:service_id> route (POST) in app.py
-- [x] Create templates/edit_service.html template
-- [x] Update templates/dashboard.html to include services section
+- [x] Update ml_model/predictor.py: Modify the prompt to include "fertilizer_name" and "quantity_for_10_liters" in the JSON response.
+- [x] Update templates/disease_detection.html: Add display for fertilizer_name and quantity_for_10_liters if not null.
+- [x] Test the disease detection feature to ensure new fields are displayed correctly.

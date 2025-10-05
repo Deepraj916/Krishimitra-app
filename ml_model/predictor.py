@@ -34,7 +34,9 @@ def predict_disease(image_path):
               "plant_name": "Name of the plant (e.g., 'Tomato', 'Potato', 'Rose')",
               "disease_name": "Name of the disease or 'Healthy'",
               "remedy_description": "A brief, one or two-sentence suggestion for treatment. If healthy, suggest a general care tip.",
-              "product_keyword": "A single, generic search term for a product to treat the disease (e.g., 'fungicide', 'neem oil'). If healthy, this should be null."
+              "product_keyword": "A single, generic search term for a product to treat the disease (e.g., 'fungicide', 'neem oil'). If healthy, this should be null.",
+              "fertilizer_name": "Name of the recommended fertilizer to spray (e.g., 'Neem Oil', 'Copper Fungicide'). If healthy or no specific fertilizer needed, use null.",
+              "quantity_for_10_liters": "Minimum quantity of the fertilizer to use for 10 liters of water (e.g., '5 ml', '10 grams'). If not applicable, use null."
             }
             """,
             img
@@ -46,14 +48,16 @@ def predict_disease(image_path):
             print(f"AI blocked the image. Reason: {response.prompt_feedback.block_reason}")
             return {
                 "plant_name": "N/A", "disease_name": "Image Blocked by AI",
-                "remedy_description": "The uploaded image was blocked by the AI's safety filters. This can happen with blurry or unusual images. Please try again with a clearer picture.", "product_keyword": None
+                "remedy_description": "The uploaded image was blocked by the AI's safety filters. This can happen with blurry or unusual images. Please try again with a clearer picture.", "product_keyword": None,
+                "fertilizer_name": None, "quantity_for_10_liters": None
             }
         
         if not response.text:
             print("AI returned an empty response.")
             return {
                 "plant_name": "N/A", "disease_name": "Analysis Failed",
-                "remedy_description": "The AI was unable to analyze this image. Please try again with a clearer picture.", "product_keyword": None
+                "remedy_description": "The AI was unable to analyze this image. Please try again with a clearer picture.", "product_keyword": None,
+                "fertilizer_name": None, "quantity_for_10_liters": None
             }
 
         response_text = response.text.strip().replace('```json', '').replace('```', '')
@@ -63,7 +67,8 @@ def predict_disease(image_path):
         print(f"An error occurred during prediction: {e}")
         return {
             "plant_name": "N/A", "disease_name": "Prediction Error",
-            "remedy_description": "A technical error occurred while trying to get a prediction. Please try again.", "product_keyword": None
+            "remedy_description": "A technical error occurred while trying to get a prediction. Please try again.", "product_keyword": None,
+            "fertilizer_name": None, "quantity_for_10_liters": None
         }
 
 def get_crop_advice(question):
