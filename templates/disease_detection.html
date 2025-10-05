@@ -62,6 +62,12 @@
                                         <a href="{{ flipkart_link }}" target="_blank" class="flipkart-btn">Search on Flipkart</a>
                                     </div>
                                 {% endif %}
+                                <div class="social-share mt-3">
+                                    <p>Share your results:</p>
+                                    <button class="btn btn-outline-primary me-2" onclick="shareOnTwitter()"><i class="bi bi-twitter"></i> Twitter</button>
+                                    <button class="btn btn-outline-primary me-2" onclick="shareOnFacebook()"><i class="bi bi-facebook"></i> Facebook</button>
+                                    <button class="btn btn-outline-success" onclick="shareOnWhatsApp()"><i class="bi bi-whatsapp"></i> WhatsApp</button>
+                                </div>
                             </div>
                         </div>
                     {% else %}
@@ -91,6 +97,29 @@
             document.getElementById('imagePreviewContainer').style.display = 'block';
         };
         reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function shareOnTwitter() {
+        const plant = "{{ prediction_data.plant_name }}";
+        const disease = "{{ prediction_data.disease_name }}";
+        const text = `I detected ${disease} on my ${plant} using Krishimitra! 🌱 Check out this AI-powered agricultural tool.`;
+        const url = window.location.href;
+        const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+        window.open(shareUrl, '_blank');
+    }
+
+    function shareOnFacebook() {
+        const url = window.location.href;
+        const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        window.open(shareUrl, '_blank');
+    }
+
+    function shareOnWhatsApp() {
+        const plant = "{{ prediction_data.plant_name }}";
+        const disease = "{{ prediction_data.disease_name }}";
+        const text = `I detected ${disease} on my ${plant} using Krishimitra! 🌱 Check it out: ${window.location.href}`;
+        const shareUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(shareUrl, '_blank');
     }
 </script>
 {% endblock %}

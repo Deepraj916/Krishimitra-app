@@ -41,6 +41,12 @@
                         <div class="alert alert-light border">
                             {{ ai_answer | safe }}
                         </div>
+                        <div class="social-share mt-3">
+                            <p>Share this advice:</p>
+                            <button class="btn btn-outline-primary me-2" onclick="shareAdviceOnTwitter()"><i class="bi bi-twitter"></i> Twitter</button>
+                            <button class="btn btn-outline-primary me-2" onclick="shareAdviceOnFacebook()"><i class="bi bi-facebook"></i> Facebook</button>
+                            <button class="btn btn-outline-success" onclick="shareAdviceOnWhatsApp()"><i class="bi bi-whatsapp"></i> WhatsApp</button>
+                        </div>
                     </div>
                     {% endif %}
                 </div>
@@ -98,6 +104,27 @@
     } else {
         micBtn.style.display = 'none';
         console.log('Speech Recognition Not Supported');
+    }
+
+    function shareAdviceOnTwitter() {
+        const question = "{{ user_question }}";
+        const text = `Got expert farming advice from Krishimitra AI: "${question}" 🌱`;
+        const url = window.location.href;
+        const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+        window.open(shareUrl, '_blank');
+    }
+
+    function shareAdviceOnFacebook() {
+        const url = window.location.href;
+        const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        window.open(shareUrl, '_blank');
+    }
+
+    function shareAdviceOnWhatsApp() {
+        const question = "{{ user_question }}";
+        const text = `Got expert farming advice from Krishimitra AI: "${question}" 🌱 Check it out: ${window.location.href}`;
+        const shareUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(shareUrl, '_blank');
     }
 </script>
 <!-- END: JavaScript -->
