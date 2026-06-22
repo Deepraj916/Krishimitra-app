@@ -448,6 +448,42 @@ def verify_otp():
             return redirect(url_for('login'))
     return render_template('verify_otp.html')
 
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            otp = str(random.randint(100000, 999999))
+            session['reset_otp'] = otp
+            session['reset_user'] = user.email
+            
+            # --- EMAIL SENDING LOGIC ---
+            try:
+                msg = Message(
+                    subject="Krishimitra - Password Reset OTP",
+                    sender=app.config['MAIL_USERNAME'],
+                    recipients=[user.email]
+                )
+                msg.body = f"Hello,\n\nYour OTP for resetting your Krishimitra password is: {otp}.\n\nPlease do not share this OTP with anyone."
+                mail.send(msg)
+                
+                # Secure flash message (Doesn't leak the OTP)
+                flash('An OTP has been sent to your registered email address.', 'success')
+            except Exception as e:
+                # In case email sending fails (e.g., bad network or credentials)
+                print(f"Error sending email: {e}")
+                flash('Failed to send OTP email. Please try again later.', 'error')
+                return redirect(url_for('forgot_password'))
+            # ---------------------------
+            
+            return redirect(url_for('verify_otp'))
+        else:
+            flash('This email address is not registered.', 'error')
+            
+    return render_template('forgot_password.html')
+
 @app.route('/crop_advisory', methods=['GET', 'POST'])
 @login_required
 def crop_advisory():
