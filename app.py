@@ -1,4 +1,4 @@
-# app.py - FINAL, STABLE VERSION (Simulated OTP)
+# app.py - FINAL, STABLE VERSION (Production Email OTP Integrated)
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
@@ -15,6 +15,8 @@ from functools import wraps
 import time
 import cloudinary
 import cloudinary.uploader
+# Added Flask-Mail import
+from flask_mail import Mail, Message
 
 # --- Local Module Imports ---
 from ml_model.predictor import predict_disease, get_crop_advice
@@ -31,6 +33,15 @@ cloudinary.config(
     api_key = os.getenv('CLOUDINARY_API_KEY'),
     api_secret = os.getenv('CLOUDINARY_API_SECRET')
 )
+
+# --- Flask-Mail SMTP Configuration ---
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', 'your-email@gmail.com')
+# Use a secure Google App Password in your .env file, not your real password
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', 'your-app-password') 
+mail = Mail(app)
 
 # --- Database Configuration ---
 db_url = os.getenv('DATABASE_URL')
@@ -97,7 +108,7 @@ class Message(db.Model):
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     sender = db.relationship('User', foreign_keys=[sender_id])
 
-# --- This block runs ONCE when the app starts up ---
+# --- Database Context Check ---
 with app.app_context():
     inspector = inspect(db.engine)
     if not inspector.has_table("user"):
@@ -183,6 +194,37 @@ def logout():
     session.clear()
     flash('You have been logged out.', 'success')
     return redirect(url_for('home'))
+
+# --- FIXED FORGOT PASSWORD ROUTE WITH SECURE EMAIL ---
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            otp = str(random.randint(100000, 999999))
+            session['reset_otp'] = otp
+            session['reset_user'] = user.email
+            
+            # Send secure backend email logic
+            try:
+                msg = Message(
+                    subject="Krishimitra - Password Reset OTP",
+                    sender=app.config['MAIL_USERNAME'],
+                    recipients=[user.email]
+                )
+                msg.body = f"Hello,\n\nYour OTP for resetting your Krishimitra password is: {otp}.\n\nPlease do not share this OTP with anyone."
+                mail.send(msg)
+                
+                flash('An OTP has been sent securely to your registered email address.', 'success')
+                return redirect(url_for('verify_otp'))
+            except Exception as e:
+                print(f"SMTP Error: {e}")
+                flash('Failed to dispatch OTP email. Check server setup or credentials.', 'error')
+                return redirect(url_for('forgot_password'))
+        else:
+            flash('This email address is not registered.', 'error')
+    return render_template('forgot_password.html')
 
 @app.route('/store')
 def store():
@@ -294,7 +336,6 @@ def disease_detection():
             file.save(leaf_upload_path)
             prediction_data = predict_disease(leaf_upload_path)
             keyword = prediction_data.get('product_keyword')
-            cache_buster = int(time.time())
             suggested_products, amazon_link, flipkart_link = [], None, None
             if keyword:
                 suggested_products = Product.query.filter(or_(Product.name.ilike(f'%{keyword}%'), Product.description.ilike(f'%{keyword}%'))).all()
@@ -407,22 +448,6 @@ def admin_delete_product(product_id):
     db.session.commit()
     flash(f"Product '{product_to_delete.name}' has been deleted by an admin.", 'success')
     return redirect(request.referrer or url_for('store'))
-    
-# --- FINAL, WORKING PASSWORD RESET (Simulated OTP) ---
-@app.route('/forgot_password', methods=['GET', 'POST'])
-def forgot_password():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        user = User.query.filter_by(email=email).first()
-        if user:
-            otp = str(random.randint(100000, 999999))
-            session['reset_otp'] = otp
-            session['reset_user'] = user.email
-            flash(f"For demonstration, your OTP is: {otp}", 'info')
-            return redirect(url_for('verify_otp'))
-        else:
-            flash('This email address is not registered.', 'error')
-    return render_template('forgot_password.html')
 
 @app.route('/verify_otp', methods=['GET', 'POST'])
 def verify_otp():
@@ -458,7 +483,6 @@ def crop_advisory():
             return render_template('crop_advisory.html', user_question=user_question, ai_answer=ai_answer)
     return render_template('crop_advisory.html', user_question=None, ai_answer=None)
 
-# --- FINAL, WORKING CONTACT PAGE (mailto link) ---
 @app.route('/contact')
 def contact_admin():
     return render_template('contact_admin.html')
