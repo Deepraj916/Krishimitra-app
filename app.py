@@ -206,7 +206,7 @@ def add_product():
         if file_to_upload:
             upload_result = cloudinary.uploader.upload(file_to_upload)
             image_url = upload_result['secure_url']
-            new_product = Product(name=request.form['name'], category=request.form['category'], description=request.form['description'], price=request.form['price'], image=image_url, seller_id=session['user_id'])
+            new_product = Product(name=request.form['name'], category=request.form['category'], description=request.form['description'], price=request.form['price'], image=image_url, seller_id=session.get('user_id'))
             db.session.add(new_product)
             db.session.commit()
             flash('Your product has been listed successfully!', 'success')
@@ -301,13 +301,13 @@ def disease_detection():
                 url_safe_keyword = quote_plus(keyword)
                 amazon_link = f"https://www.amazon.in/s?k={url_safe_keyword}"
                 flipkart_link = f"https://www.flipkart.com/search?q={url_safe_keyword}"
-            return render_template('disease_detection.html', prediction_data=prediction_data, uploaded_image=filename, products=suggested_products, amazon_link=amazon_link, flipkart_link=flipkart_link, cache_buster=cache_buster)
+            return render_template('disease_detection.html', prediction_data=prediction_data, uploaded_image=filename, products=suggested_products, amazon_link=amazon_link, flipkart_link=flipkart_link)
     return render_template('disease_detection.html', prediction_data=None)
 
 @app.route('/prices')
 def market_prices():
-    markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur", "Ahmednagar", "Akola", "Aurangabad", "Baramati", "Dhule", "Jalgaon", "Latur", "Nanded", "Osmanabad", "Rahuri", "Sangamner", "Sangli", "Solapur", "Srirampur"]
-    commodities = ["Tomato", "Onion", "Potato", "Brinjal", "Cabbage", "Cauliflower", "Lady's Finger", "Bitter Gourd", "Bottle Gourd", "Cucumber", "Green Chilli", "Garlic", "Ginger(Green)", "Lemon", "Pomegranate", "Banana", "Grapes", "Wheat", "Soya Bean", "Cotton", "Maize"]
+    markets = ["Pune", "Nashik", "Mumbai", "Nagpur", "Satara", "Kolhapur", "Ahmednagar", "Akola", "Aurangabad", "Baramati", "Dhule", "Jalgaon", "Latur", "Nanded", "Osmanabad", "Rahuri", "Sangamner"]
+    commodities = ["Tomato", "Onion", "Potato", "Brinjal", "Cabbage", "Cauliflower", "Lady's Finger", "Bitter Gourd", "Bottle Gourd", "Cucumber", "Green Chilli", "Garlic", "Ginger(Green)", "Lemon"]
     selected_market = request.args.get('market')
     selected_commodity = request.args.get('commodity')
     date_choice = request.args.get('date', 'today')
@@ -447,42 +447,6 @@ def verify_otp():
             flash('Your password has been reset successfully! Please log in.', 'success')
             return redirect(url_for('login'))
     return render_template('verify_otp.html')
-
-@app.route('/forgot_password', methods=['GET', 'POST'])
-def forgot_password():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        user = User.query.filter_by(email=email).first()
-        
-        if user:
-            otp = str(random.randint(100000, 999999))
-            session['reset_otp'] = otp
-            session['reset_user'] = user.email
-            
-            # --- EMAIL SENDING LOGIC ---
-            try:
-                msg = Message(
-                    subject="Krishimitra - Password Reset OTP",
-                    sender=app.config['MAIL_USERNAME'],
-                    recipients=[user.email]
-                )
-                msg.body = f"Hello,\n\nYour OTP for resetting your Krishimitra password is: {otp}.\n\nPlease do not share this OTP with anyone."
-                mail.send(msg)
-                
-                # Secure flash message (Doesn't leak the OTP)
-                flash('An OTP has been sent to your registered email address.', 'success')
-            except Exception as e:
-                # In case email sending fails (e.g., bad network or credentials)
-                print(f"Error sending email: {e}")
-                flash('Failed to send OTP email. Please try again later.', 'error')
-                return redirect(url_for('forgot_password'))
-            # ---------------------------
-            
-            return redirect(url_for('verify_otp'))
-        else:
-            flash('This email address is not registered.', 'error')
-            
-    return render_template('forgot_password.html')
 
 @app.route('/crop_advisory', methods=['GET', 'POST'])
 @login_required
