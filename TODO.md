@@ -1,4 +1,0 @@
-- [x] Update ml_model/predictor.py: Modify the prompt to include "fertilizer_name" and "quantity_for_10_liters" in the JSON response.
-- [x] Update templates/disease_detection.html: Add display for fertilizer_name and quantity_for_10_liters if not null.
-- [x] Test the disease detection feature to ensure new fields are displayed correctly.
-- [x] Add social sharing buttons to disease detection and crop advisory pages.

@@ -1,4 +1,4 @@
-# app.py - FINAL, STABLE VERSION (Production Email OTP Integrated)
+
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
@@ -16,7 +16,7 @@ import time
 import cloudinary
 import cloudinary.uploader
 # Added Flask-Mail import
-from flask_mail import Mail, Message
+from flask_mail import Mail, Message as FlaskMessage
 
 # --- Local Module Imports ---
 from ml_model.predictor import predict_disease, get_crop_advice
@@ -195,7 +195,6 @@ def logout():
     flash('You have been logged out.', 'success')
     return redirect(url_for('home'))
 
-# --- FIXED FORGOT PASSWORD ROUTE WITH SECURE EMAIL ---
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
@@ -206,14 +205,16 @@ def forgot_password():
             session['reset_otp'] = otp
             session['reset_user'] = user.email
             
-            # Send secure backend email logic
+            
             try:
-                msg = Message(
+                
+                msg = FlaskMessage(
                     subject="Krishimitra - Password Reset OTP",
                     sender=app.config['MAIL_USERNAME'],
                     recipients=[user.email]
                 )
                 msg.body = f"Hello,\n\nYour OTP for resetting your Krishimitra password is: {otp}.\n\nPlease do not share this OTP with anyone."
+                
                 mail.send(msg)
                 
                 flash('An OTP has been sent securely to your registered email address.', 'success')

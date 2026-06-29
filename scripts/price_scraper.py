@@ -17,15 +17,14 @@ def get_market_prices(market=None, commodity=None, date_str=None):
 
     base_url = f"https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key={api_key}&format=json"
     
-    # Dynamically add filters to the URL
+    
     filters = "&filters[state]=Maharashtra"
     if market:
         filters += f"&filters[market]={market}"
     if commodity:
         filters += f"&filters[commodity]={commodity}"
     
-    # --- THIS IS THE NEW PART ---
-    # Add a date filter if one is provided
+    
     if date_str:
         filters += f"&filters[arrival_date]={date_str}"
     # --------------------------
