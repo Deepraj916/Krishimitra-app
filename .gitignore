@@ -1,9 +1,4 @@
-# Ignore environment files
 .env
-
-# Ignore Python cache files
+venv/
 __pycache__/
 *.pyc
-
-# Ignore the local database folder
-instance/
